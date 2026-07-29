@@ -28,6 +28,8 @@ model Baby {
   milestones   Milestone[]
   chatMessages ChatMessage[]
   insights     Insight[]
+  predictions  Prediction[]
+  tips         Tip[]
 }
 
 enum Sex {
@@ -179,4 +181,46 @@ enum InsightSeverity {
   INFO
   TIP
   ATTENTION
+}
+
+model Prediction {
+  id                 String               @id @default(cuid())
+  babyId             String
+  baby               Baby                 @relation(fields: [babyId], references: [id], onDelete: Cascade)
+  eventType          PredictionEventType
+  predictedTime      DateTime
+  confidence         Float
+  generatedAt        DateTime             @default(now())
+  resolvedActualTime DateTime?
+
+  @@index([babyId, eventType, generatedAt])
+}
+
+enum PredictionEventType {
+  FEEDING
+  SLEEP
+}
+
+model Tip {
+  id             String    @id @default(cuid())
+  babyId         String
+  baby           Baby      @relation(fields: [babyId], references: [id], onDelete: Cascade)
+  category       TipCategory
+  content        String
+  ageDaysMin     Int?
+  ageDaysMax     Int?
+  shownAt        DateTime?
+  dismissed      Boolean   @default(false)
+  usefulFeedback Boolean?
+
+  createdAt DateTime @default(now())
+
+  @@index([babyId, dismissed])
+}
+
+enum TipCategory {
+  SLEEP
+  FEEDING
+  DEVELOPMENT
+  SAFETY
 }

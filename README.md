@@ -1,11 +1,22 @@
 # BM101 — Baby Management App
 
 Track feedings, sleep, diapers, growth, and milestones for your baby — with
-an AI assistant and auto-generated insights powered by Claude.
+an AI assistant, auto-generated insights, and predictive reminders powered
+by Claude.
 
-See [PLANNING.md](./PLANNING.md) for the architecture and product plan.
+This repo now holds two clients against one backend:
 
-## Getting started
+- **Web app** (this directory) — Next.js, described below. Also serves the
+  JSON API (`/api/v1/*`) that the iOS app talks to.
+- **`ios/`** — native SwiftUI app. See [ios/README.md](./ios/README.md) —
+  requires a Mac/Xcode to build; it was written in an environment without
+  either, so it hasn't been compiled yet.
+
+See [PLANNING.md](./PLANNING.md) for the original web-app architecture, and
+[PLANNING-iOS.md](./PLANNING-iOS.md) for how/why the iOS app was added
+alongside it.
+
+## Getting started (web app + backend API)
 
 ```bash
 npm install
@@ -39,3 +50,13 @@ The dashboard's "AI insights" panel and the `/assistant` chat page call the
 Anthropic API (`app/api/insights`, `app/api/assistant`). Both require
 `ANTHROPIC_API_KEY` in `.env` — without it they fail gracefully with a
 message telling you to set the key.
+
+## JSON API (`/api/v1`) — for the iOS app
+
+`app/api/v1/*` exposes the same data model as JSON, for the native app in
+`ios/`: babies, caregivers, feeding/sleep/diaper/growth/milestone logs,
+rolling-average predictions, an age-gated tip bank, a non-streaming chat
+endpoint, and a `/parse` endpoint that turns a free-text note into a
+structured log entry via Claude tool use. No auth in V1 — same scope
+limitation as the web app. See `PLANNING-iOS.md` §4 for the full route list
+and design notes.

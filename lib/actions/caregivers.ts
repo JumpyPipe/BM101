@@ -1,0 +1,37 @@
+"use server";
+
+import { z } from "zod";
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { prisma } from "@/lib/db";
+
+const caregiverSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  role: z.string().min(1, "Role is required"),
+});
+
+export async function createCaregiver(formData: FormData) {
+  const parsed = caregiverSchema.parse({
+    name: formData.get("name"),
+    role: formData.get("role"),
+  });
+  await prisma.caregiver.create({ data: parsed });
+  revalidatePath("/caregivers");
+  redirect("/caregivers");
+}
+
+export async function updateCaregiver(caregiverId: string, formData: FormData) {
+  const parsed = caregiverSchema.parse({
+    name: formData.get("name"),
+    role: formData.get("role"),
+  });
+  await prisma.caregiver.update({ where: { id: caregiverId }, data: parsed });
+  revalidatePath("/caregivers");
+  redirect("/caregivers");
+}
+
+export async function deleteCaregiver(formData: FormData) {
+  const caregiverId = formData.get("caregiverId") as string;
+  await prisma.caregiver.delete({ where: { id: caregiverId } });
+  revalidatePath("/caregivers");
+}

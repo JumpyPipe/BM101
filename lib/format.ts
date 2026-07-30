@@ -18,6 +18,20 @@ export function relativeTime(date: Date): string {
   return formatDistanceToNow(date, { addSuffix: true });
 }
 
+/** Compact relative time ("18h ago", "in 2h") for tight spaces like dashboard tiles. */
+export function shortRelativeTime(date: Date): string {
+  const diffMs = date.getTime() - Date.now();
+  const future = diffMs > 0;
+  const abs = Math.abs(diffMs);
+  const minutes = Math.round(abs / 60_000);
+  const hours = Math.round(abs / 3_600_000);
+  const days = Math.round(abs / 86_400_000);
+
+  if (minutes < 1) return "just now";
+  const value = minutes < 60 ? `${minutes}m` : hours < 24 ? `${hours}h` : `${days}d`;
+  return future ? `in ${value}` : `${value} ago`;
+}
+
 export function formatDateTime(date: Date): string {
   return format(date, "MMM d, h:mm a");
 }

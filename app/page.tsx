@@ -2,13 +2,18 @@ import Link from "next/link";
 import { Milk, Moon, Baby as BabyIcon, TrendingUp, Sparkles } from "lucide-react";
 import { getCurrentBaby } from "@/lib/current-baby";
 import { prisma } from "@/lib/db";
-import { formatAge, formatDateTime, formatDuration, relativeTime, startOfToday } from "@/lib/format";
+import { formatAge, formatDateTime, formatDuration, relativeTime, shortRelativeTime, startOfToday } from "@/lib/format";
+import { predictNextFeeding, predictNextSleep } from "@/lib/predictions";
+import { getDueTips } from "@/lib/tips";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SummaryCard } from "@/components/dashboard/summary-card";
 import { QuickActions } from "@/components/dashboard/quick-actions";
 import { InsightsPanel, type InsightDTO } from "@/components/dashboard/insights-panel";
+import { PredictionBanner } from "@/components/dashboard/prediction-banner";
+import { TipsPanel } from "@/components/dashboard/tips-panel";
+import { QuickNote } from "@/components/dashboard/quick-note";
 
 export default async function DashboardPage() {
   const { current } = await getCurrentBaby();
@@ -32,19 +37,32 @@ export default async function DashboardPage() {
   const babyId = current.id;
   const today = startOfToday();
 
-  const [lastFeeding, lastSleep, ongoingSleep, diapersToday, lastGrowth, recentMilestone, insights] =
-    await Promise.all([
-      prisma.feedingLog.findFirst({ where: { babyId }, orderBy: { startedAt: "desc" } }),
-      prisma.sleepLog.findFirst({
-        where: { babyId, endedAt: { not: null } },
-        orderBy: { startedAt: "desc" },
-      }),
-      prisma.sleepLog.findFirst({ where: { babyId, endedAt: null }, orderBy: { startedAt: "desc" } }),
-      prisma.diaperLog.count({ where: { babyId, occurredAt: { gte: today } } }),
-      prisma.growthLog.findFirst({ where: { babyId }, orderBy: { measuredAt: "desc" } }),
-      prisma.milestone.findFirst({ where: { babyId }, orderBy: { occurredAt: "desc" } }),
-      prisma.insight.findMany({ where: { babyId }, orderBy: { createdAt: "desc" }, take: 5 }),
-    ]);
+  const [
+    lastFeeding,
+    lastSleep,
+    ongoingSleep,
+    diapersToday,
+    lastGrowth,
+    recentMilestone,
+    insights,
+    feedingPrediction,
+    sleepPrediction,
+    dueTips,
+  ] = await Promise.all([
+    prisma.feedingLog.findFirst({ where: { babyId }, orderBy: { startedAt: "desc" } }),
+    prisma.sleepLog.findFirst({
+      where: { babyId, endedAt: { not: null } },
+      orderBy: { startedAt: "desc" },
+    }),
+    prisma.sleepLog.findFirst({ where: { babyId, endedAt: null }, orderBy: { startedAt: "desc" } }),
+    prisma.diaperLog.count({ where: { babyId, occurredAt: { gte: today } } }),
+    prisma.growthLog.findFirst({ where: { babyId }, orderBy: { measuredAt: "desc" } }),
+    prisma.milestone.findFirst({ where: { babyId }, orderBy: { occurredAt: "desc" } }),
+    prisma.insight.findMany({ where: { babyId }, orderBy: { createdAt: "desc" }, take: 5 }),
+    predictNextFeeding(babyId),
+    predictNextSleep(babyId),
+    getDueTips(babyId),
+  ]);
 
   const [feedingLogs, sleepLogs, diaperLogs] = await Promise.all([
     prisma.feedingLog.findMany({ where: { babyId }, orderBy: { startedAt: "desc" }, take: 5 }),
@@ -76,7 +94,7 @@ export default async function DashboardPage() {
         <SummaryCard
           icon={Milk}
           label="Last feeding"
-          value={lastFeeding ? relativeTime(lastFeeding.startedAt) : "No data"}
+          value={lastFeeding ? shortRelativeTime(lastFeeding.startedAt) : "No data"}
           hint={lastFeeding ? cap(lastFeeding.type.toLowerCase()) : undefined}
         />
         <SummaryCard
@@ -84,9 +102,9 @@ export default async function DashboardPage() {
           label={ongoingSleep ? "Sleeping now" : "Last sleep"}
           value={
             ongoingSleep
-              ? relativeTime(ongoingSleep.startedAt)
+              ? shortRelativeTime(ongoingSleep.startedAt)
               : lastSleep
-                ? relativeTime(lastSleep.startedAt)
+                ? shortRelativeTime(lastSleep.startedAt)
                 : "No data"
           }
           hint={
@@ -102,11 +120,17 @@ export default async function DashboardPage() {
           icon={TrendingUp}
           label="Latest weight"
           value={lastGrowth?.weightKg ? `${lastGrowth.weightKg} kg` : "No data"}
-          hint={lastGrowth ? relativeTime(lastGrowth.measuredAt) : undefined}
+          hint={lastGrowth ? shortRelativeTime(lastGrowth.measuredAt) : undefined}
         />
       </div>
 
+      <QuickNote babyId={babyId} />
+
+      <PredictionBanner feeding={feedingPrediction} sleep={sleepPrediction} />
+
       <QuickActions babyId={babyId} />
+
+      <TipsPanel tips={dueTips} />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>

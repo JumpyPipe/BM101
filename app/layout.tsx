@@ -10,6 +10,13 @@ import { BabySwitcher } from "@/components/dashboard/baby-switcher";
 import { Button } from "@/components/ui/button";
 import { SnugMark } from "@/components/ui/snug-mark";
 
+// The layout calls the database on every render (current baby, nav state).
+// Without this, Next tries to statically prerender pages that don't have
+// their own dynamic signal, executing that DB call at *build* time —
+// coupling build success to database reachability. Force every route
+// under this layout to render per-request instead.
+export const dynamic = "force-dynamic";
+
 const nunito = Nunito({
   variable: "--font-nunito",
   subsets: ["latin"],

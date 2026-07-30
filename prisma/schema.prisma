@@ -1,0 +1,226 @@
+// Prisma schema for BM101 — Baby Management App
+// See PLANNING.md section 3 for the data model rationale.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Baby {
+  id       String   @id @default(cuid())
+  name     String
+  dob      DateTime
+  sex      Sex      @default(UNKNOWN)
+  photoUrl String?
+  notes    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  feedingLogs  FeedingLog[]
+  sleepLogs    SleepLog[]
+  diaperLogs   DiaperLog[]
+  growthLogs   GrowthLog[]
+  milestones   Milestone[]
+  chatMessages ChatMessage[]
+  insights     Insight[]
+  predictions  Prediction[]
+  tips         Tip[]
+}
+
+enum Sex {
+  MALE
+  FEMALE
+  UNKNOWN
+}
+
+model Caregiver {
+  id   String @id @default(cuid())
+  name String
+  role String @default("Parent")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model FeedingLog {
+  id          String       @id @default(cuid())
+  babyId      String
+  baby        Baby         @relation(fields: [babyId], references: [id], onDelete: Cascade)
+  type        FeedingType
+  side        FeedingSide?
+  amountMl    Float?
+  durationMin Float?
+  startedAt   DateTime
+  note        String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([babyId, startedAt])
+}
+
+enum FeedingType {
+  BREAST
+  BOTTLE
+  SOLID
+}
+
+enum FeedingSide {
+  LEFT
+  RIGHT
+  BOTH
+}
+
+model SleepLog {
+  id        String    @id @default(cuid())
+  babyId    String
+  baby      Baby      @relation(fields: [babyId], references: [id], onDelete: Cascade)
+  type      SleepType
+  startedAt DateTime
+  endedAt   DateTime?
+  note      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([babyId, startedAt])
+}
+
+enum SleepType {
+  NAP
+  NIGHT
+}
+
+model DiaperLog {
+  id         String     @id @default(cuid())
+  babyId     String
+  baby       Baby       @relation(fields: [babyId], references: [id], onDelete: Cascade)
+  type       DiaperType
+  occurredAt DateTime
+  note       String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([babyId, occurredAt])
+}
+
+enum DiaperType {
+  WET
+  DIRTY
+  MIXED
+}
+
+model GrowthLog {
+  id         String   @id @default(cuid())
+  babyId     String
+  baby       Baby     @relation(fields: [babyId], references: [id], onDelete: Cascade)
+  measuredAt DateTime
+  weightKg   Float?
+  heightCm   Float?
+  headCm     Float?
+  note       String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([babyId, measuredAt])
+}
+
+model Milestone {
+  id          String   @id @default(cuid())
+  babyId      String
+  baby        Baby     @relation(fields: [babyId], references: [id], onDelete: Cascade)
+  occurredAt  DateTime
+  category    String
+  title       String
+  description String?
+  photoUrl    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([babyId, occurredAt])
+}
+
+model ChatMessage {
+  id        String      @id @default(cuid())
+  babyId    String
+  baby      Baby        @relation(fields: [babyId], references: [id], onDelete: Cascade)
+  role      MessageRole
+  content   String
+  createdAt DateTime    @default(now())
+
+  @@index([babyId, createdAt])
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+}
+
+model Insight {
+  id        String          @id @default(cuid())
+  babyId    String
+  baby      Baby            @relation(fields: [babyId], references: [id], onDelete: Cascade)
+  category  String
+  severity  InsightSeverity @default(INFO)
+  title     String
+  body      String
+  createdAt DateTime        @default(now())
+
+  @@index([babyId, createdAt])
+}
+
+enum InsightSeverity {
+  INFO
+  TIP
+  ATTENTION
+}
+
+model Prediction {
+  id                 String               @id @default(cuid())
+  babyId             String
+  baby               Baby                 @relation(fields: [babyId], references: [id], onDelete: Cascade)
+  eventType          PredictionEventType
+  predictedTime      DateTime
+  confidence         Float
+  generatedAt        DateTime             @default(now())
+  resolvedActualTime DateTime?
+
+  @@index([babyId, eventType, generatedAt])
+}
+
+enum PredictionEventType {
+  FEEDING
+  SLEEP
+}
+
+model Tip {
+  id             String    @id @default(cuid())
+  babyId         String
+  baby           Baby      @relation(fields: [babyId], references: [id], onDelete: Cascade)
+  category       TipCategory
+  content        String
+  ageDaysMin     Int?
+  ageDaysMax     Int?
+  shownAt        DateTime?
+  dismissed      Boolean   @default(false)
+  usefulFeedback Boolean?
+
+  createdAt DateTime @default(now())
+
+  @@index([babyId, dismissed])
+}
+
+enum TipCategory {
+  SLEEP
+  FEEDING
+  DEVELOPMENT
+  SAFETY
+}

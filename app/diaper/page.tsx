@@ -27,7 +27,7 @@ export default async function DiaperPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-semibold">Diaper</h1>
+      <h1 className="font-fredoka text-2xl font-semibold">Diaper</h1>
 
       <Card id="log">
         <CardHeader>

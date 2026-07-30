@@ -38,7 +38,7 @@ export function QuickActions({ babyId }: { babyId: string }) {
 
 function SubmitButtonLink({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
-    <span className="inline-flex h-8 items-center gap-2 rounded-lg border border-zinc-300 px-3 text-xs font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800">
+    <span className="inline-flex h-8 items-center gap-2 rounded-full border border-zinc-300 px-3 text-xs font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800">
       {icon} {label}
     </span>
   );

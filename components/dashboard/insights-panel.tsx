@@ -66,7 +66,7 @@ export function InsightsPanel({
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         {error && (
-          <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">
+          <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">
             {error}
           </p>
         )}
@@ -79,7 +79,7 @@ export function InsightsPanel({
         {insights.map((insight) => (
           <div
             key={insight.id}
-            className="rounded-lg border border-zinc-200 p-3 dark:border-zinc-800"
+            className="rounded-xl border border-zinc-200 p-3 dark:border-zinc-800"
           >
             <div className="mb-1 flex items-center gap-2">
               <Badge variant={severityVariant[insight.severity]}>{insight.category}</Badge>

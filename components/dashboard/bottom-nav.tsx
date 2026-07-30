@@ -32,12 +32,19 @@ export function BottomNav() {
               href={href}
               className="flex min-h-11 flex-col items-center justify-center gap-0.5 py-2 text-[11px] font-medium"
             >
-              <Icon
+              <span
                 className={cn(
-                  "h-5 w-5",
-                  active ? "text-teal-600" : "text-zinc-400 dark:text-zinc-500",
+                  "flex h-7 w-11 items-center justify-center rounded-full transition-colors",
+                  active && "bg-teal-100 dark:bg-teal-950",
                 )}
-              />
+              >
+                <Icon
+                  className={cn(
+                    "h-5 w-5",
+                    active ? "text-teal-600" : "text-zinc-400 dark:text-zinc-500",
+                  )}
+                />
+              </span>
               <span className={cn(active ? "text-teal-600" : "text-zinc-500 dark:text-zinc-400")}>
                 {label}
               </span>

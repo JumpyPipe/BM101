@@ -16,7 +16,7 @@ export default async function EditCaregiverPage({ params }: { params: Promise<{ 
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-semibold">Edit {caregiver.name}</h1>
+      <h1 className="font-fredoka text-2xl font-semibold">Edit {caregiver.name}</h1>
       <Card>
         <CardHeader>
           <CardTitle>Caregiver</CardTitle>

@@ -37,7 +37,7 @@ export function SidebarNav() {
             key={href}
             href={href}
             className={cn(
-              "flex shrink-0 items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+              "flex shrink-0 items-center gap-3 rounded-full px-3 py-2 text-sm font-medium transition-colors",
               active
                 ? "bg-teal-600 text-white"
                 : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800",

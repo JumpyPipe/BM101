@@ -20,9 +20,11 @@ export default async function DashboardPage() {
 
   if (!current) {
     return (
-      <div className="flex flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-zinc-300 py-24 text-center dark:border-zinc-700">
-        <BabyIcon className="h-10 w-10 text-teal-500" />
-        <h1 className="text-xl font-semibold">Welcome to Snug</h1>
+      <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-zinc-300 py-24 text-center dark:border-zinc-700">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-teal-50 dark:bg-teal-950">
+          <BabyIcon className="h-8 w-8 text-teal-500" />
+        </div>
+        <h1 className="font-fredoka text-xl font-semibold">Welcome to Snug</h1>
         <p className="max-w-sm text-sm text-zinc-500">
           Add your baby&apos;s profile to start tracking feedings, sleep, diapers, growth, and
           milestones.
@@ -86,7 +88,7 @@ export default async function DashboardPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold">{current.name}</h1>
+        <h1 className="font-fredoka text-2xl font-semibold">{current.name}</h1>
         <p className="text-sm text-zinc-500">{formatAge(current.dob)}</p>
       </div>
 

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 export default function NewCaregiverPage() {
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-semibold">Add a caregiver</h1>
+      <h1 className="font-fredoka text-2xl font-semibold">Add a caregiver</h1>
       <Card>
         <CardHeader>
           <CardTitle>Caregiver</CardTitle>

@@ -18,7 +18,7 @@ export default async function BabiesPage() {
   return (
     <div className="flex flex-col gap-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Babies</h1>
+        <h1 className="font-fredoka text-2xl font-semibold">Babies</h1>
         <Link href="/babies/new">
           <Button size="sm">
             <Plus className="h-4 w-4" /> Add baby

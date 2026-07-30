@@ -61,7 +61,7 @@ export function QuickNote({ babyId }: { babyId: string }) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-rose-500" /> Quick note
+          <Sparkles className="h-4 w-4 text-teal-500" /> Quick note
         </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-2">
@@ -86,7 +86,7 @@ export function QuickNote({ babyId }: { babyId: string }) {
           </Button>
         </div>
         {message && (
-          <p className={`text-xs ${message.isError ? "text-rose-600" : "text-emerald-600"}`}>
+          <p className={`text-xs ${message.isError ? "text-red-600" : "text-emerald-600"}`}>
             {message.text}
           </p>
         )}

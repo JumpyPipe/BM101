@@ -17,7 +17,7 @@ export default function MorePage() {
         {links.map(({ href, label, description, icon: Icon }) => (
           <Link key={href} href={href}>
             <Card className="flex flex-row items-center gap-3 p-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-rose-50 text-rose-600 dark:bg-rose-950">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-teal-50 text-teal-600 dark:bg-teal-950">
                 <Icon className="h-5 w-5" />
               </div>
               <div className="flex-1">

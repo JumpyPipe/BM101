@@ -5,7 +5,7 @@ import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "rec
 export function TrendChart({
   data,
   dataKey = "value",
-  color = "#e11d48",
+  color = "#0d9488",
   unit,
 }: {
   data: { label: string; value: number }[];

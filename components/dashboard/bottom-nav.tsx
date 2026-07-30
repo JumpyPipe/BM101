@@ -35,10 +35,10 @@ export function BottomNav() {
               <Icon
                 className={cn(
                   "h-5 w-5",
-                  active ? "text-rose-600" : "text-zinc-400 dark:text-zinc-500",
+                  active ? "text-teal-600" : "text-zinc-400 dark:text-zinc-500",
                 )}
               />
-              <span className={cn(active ? "text-rose-600" : "text-zinc-500 dark:text-zinc-400")}>
+              <span className={cn(active ? "text-teal-600" : "text-zinc-500 dark:text-zinc-400")}>
                 {label}
               </span>
             </Link>

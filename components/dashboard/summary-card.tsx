@@ -20,7 +20,7 @@ export function SummaryCard({
       <CardContent className="flex items-start gap-3 p-4">
         <div
           className={cn(
-            "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-rose-100 text-rose-600 dark:bg-rose-950 dark:text-rose-300",
+            "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-teal-100 text-teal-600 dark:bg-teal-950 dark:text-teal-300",
             accent,
           )}
         >

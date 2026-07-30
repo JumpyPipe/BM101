@@ -1,4 +1,4 @@
-// One-off icon generator for the PWA manifest / apple-touch-icon.
+// Icon generator for the PWA manifest / apple-touch-icon / favicon.
 // Run with: node scripts/generate-icons.mjs
 import sharp from "sharp";
 import { mkdirSync } from "node:fs";
@@ -6,34 +6,45 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const outDir = join(__dirname, "..", "public", "icons");
-mkdirSync(outDir, { recursive: true });
+const iconsDir = join(__dirname, "..", "public", "icons");
+const appDir = join(__dirname, "..", "app");
+mkdirSync(iconsDir, { recursive: true });
 
-const HEART_PATH =
-  "M462.3 62.6C407.5 15.9 326 24.3 275.7 76.2L256 96.5l-19.7-20.3C186.1 24.3 104.5 15.9 49.7 62.6c-62.8 53.6-66.1 149.8-9.9 207.9l193.5 199.8c12.5 12.9 32.8 12.9 45.3 0l193.5-199.8c56.3-58.1 53-154.3-9.8-207.9z";
+const BRAND_TEAL = "#0d9488"; // Tailwind teal-600
 
-// Full-bleed square, background fills to the edge — iOS/Android apply their
-// own corner mask, so a pre-rounded icon would double-mask and look wrong.
+// Crescent moon, drawn as two overlapping circles rather than an arc path:
+// a white disc, then a second circle painted the same color as the
+// background directly on top of it — visually a crescent, and far more
+// reliable to rasterize correctly than hand-computed SVG arcs.
+// Full-bleed square background — iOS/Android apply their own corner mask,
+// so a pre-rounded icon would double-mask and look wrong.
 function iconSvg(size) {
-  const scale = (size / 512) * 0.62;
-  const offset = (size - 512 * scale) / 2;
+  const moonR = size * 0.26;
+  const moonCx = size * 0.42;
+  const moonCy = size * 0.52;
+  const cutR = size * 0.23;
+  const cutCx = moonCx + moonR * 0.62;
+  const cutCy = moonCy - moonR * 0.55;
+
   return `
     <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
-      <rect width="${size}" height="${size}" fill="#e11d48"/>
-      <g transform="translate(${offset}, ${offset}) scale(${scale})">
-        <path d="${HEART_PATH}" fill="#ffffff"/>
-      </g>
+      <rect width="${size}" height="${size}" fill="${BRAND_TEAL}"/>
+      <circle cx="${moonCx}" cy="${moonCy}" r="${moonR}" fill="#ffffff"/>
+      <circle cx="${cutCx}" cy="${cutCy}" r="${cutR}" fill="${BRAND_TEAL}"/>
+      <circle cx="${size * 0.74}" cy="${size * 0.27}" r="${size * 0.028}" fill="#ffffff"/>
+      <circle cx="${size * 0.81}" cy="${size * 0.37}" r="${size * 0.016}" fill="#ffffff"/>
     </svg>
   `;
 }
 
 const sizes = [
-  { file: "icon-192.png", size: 192 },
-  { file: "icon-512.png", size: 512 },
-  { file: "apple-touch-icon.png", size: 180 },
+  { dir: iconsDir, file: "icon-192.png", size: 192 },
+  { dir: iconsDir, file: "icon-512.png", size: 512 },
+  { dir: iconsDir, file: "apple-touch-icon.png", size: 180 },
+  { dir: appDir, file: "icon.png", size: 64 }, // Next.js favicon convention
 ];
 
-for (const { file, size } of sizes) {
-  await sharp(Buffer.from(iconSvg(size))).png().toFile(join(outDir, file));
-  console.log("wrote", file);
+for (const { dir, file, size } of sizes) {
+  await sharp(Buffer.from(iconSvg(size))).png().toFile(join(dir, file));
+  console.log("wrote", join(dir, file));
 }

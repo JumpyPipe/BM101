@@ -21,8 +21,8 @@ export default async function DashboardPage() {
   if (!current) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-zinc-300 py-24 text-center dark:border-zinc-700">
-        <BabyIcon className="h-10 w-10 text-rose-500" />
-        <h1 className="text-xl font-semibold">Welcome to BM101</h1>
+        <BabyIcon className="h-10 w-10 text-teal-500" />
+        <h1 className="text-xl font-semibold">Welcome to Snug</h1>
         <p className="max-w-sm text-sm text-zinc-500">
           Add your baby&apos;s profile to start tracking feedings, sleep, diapers, growth, and
           milestones.

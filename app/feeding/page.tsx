@@ -56,7 +56,7 @@ export default async function FeedingPage() {
               {logs.map((log) => (
                 <li key={log.id} className="flex items-center justify-between gap-3 py-2 text-sm">
                   <div className="flex items-center gap-2">
-                    <Badge variant="rose">{cap(log.type)}</Badge>
+                    <Badge variant="teal">{cap(log.type)}</Badge>
                     <span>
                       {log.side ? `${cap(log.side)} · ` : ""}
                       {log.amountMl ? `${log.amountMl}ml` : ""}

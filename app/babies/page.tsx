@@ -40,7 +40,7 @@ export default async function BabiesPage() {
                       {formatAge(baby.dob)} · born {formatDate(baby.dob)}
                     </p>
                   </div>
-                  {baby.id === current?.id && <Badge variant="rose">Active</Badge>}
+                  {baby.id === current?.id && <Badge variant="teal">Active</Badge>}
                 </div>
                 {baby.notes && <p className="text-sm text-zinc-500">{baby.notes}</p>}
                 <div className="flex flex-wrap items-center gap-2">

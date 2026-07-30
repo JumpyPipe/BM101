@@ -1,26 +1,30 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Nunito, Fredoka } from "next/font/google";
 import Link from "next/link";
-import { Heart, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import "./globals.css";
 import { getCurrentBaby } from "@/lib/current-baby";
 import { SidebarNav } from "@/components/dashboard/sidebar-nav";
 import { BottomNav } from "@/components/dashboard/bottom-nav";
 import { BabySwitcher } from "@/components/dashboard/baby-switcher";
 import { Button } from "@/components/ui/button";
+import { SnugMark } from "@/components/ui/snug-mark";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const nunito = Nunito({
+  variable: "--font-nunito",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+// Reserved for the "Snug" wordmark only — its rounder, bolder curves give
+// the brand mark personality without hurting body-text readability.
+const fredoka = Fredoka({
+  variable: "--font-fredoka",
   subsets: ["latin"],
+  weight: ["500", "600"],
 });
 
 export const metadata: Metadata = {
-  title: "BM101 — Baby Management",
+  title: "Snug — Baby Management",
   description: "Track feedings, sleep, diapers, growth, and milestones — with AI-powered insights.",
   icons: {
     icon: "/icons/icon-192.png",
@@ -29,7 +33,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "BM101",
+    title: "Snug",
   },
 };
 
@@ -37,7 +41,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#e11d48",
+  themeColor: "#0d9488",
 };
 
 export default async function RootLayout({
@@ -50,7 +54,7 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${nunito.variable} ${fredoka.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-50">
         <div className="flex min-h-screen flex-col lg:flex-row">
@@ -58,17 +62,17 @@ export default async function RootLayout({
             className="flex items-center justify-between border-b border-zinc-200 bg-white px-4 py-3 dark:border-zinc-800 dark:bg-zinc-900 lg:hidden"
             style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))" }}
           >
-            <Link href="/" className="flex items-center gap-2 font-semibold">
-              <Heart className="h-5 w-5 text-rose-600" />
-              BM101
+            <Link href="/" className="font-fredoka flex items-center gap-2 text-lg font-semibold text-teal-700 dark:text-teal-400">
+              <SnugMark className="h-6 w-6 text-teal-600" />
+              Snug
             </Link>
             {current && <BabySwitcher babies={babies} currentId={current.id} />}
           </header>
 
           <aside className="hidden border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 lg:block lg:w-64 lg:shrink-0 lg:border-r">
-            <div className="flex items-center gap-2 px-4 pt-5 font-semibold">
-              <Heart className="h-5 w-5 text-rose-600" />
-              BM101
+            <div className="font-fredoka flex items-center gap-2 px-4 pt-5 text-lg font-semibold text-teal-700 dark:text-teal-400">
+              <SnugMark className="h-6 w-6 text-teal-600" />
+              Snug
             </div>
             <div className="px-3 pt-4">
               {current ? (

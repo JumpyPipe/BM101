@@ -35,7 +35,7 @@ export function TipsPanel({ tips }: { tips: Tip[] }) {
                     <input type="hidden" name="useful" value="false" />
                     <button
                       type="submit"
-                      className="flex items-center gap-1 text-xs text-zinc-400 hover:text-rose-600"
+                      className="flex items-center gap-1 text-xs text-zinc-400 hover:text-red-600"
                     >
                       <ThumbsDown className="h-3.5 w-3.5" /> Not useful
                     </button>

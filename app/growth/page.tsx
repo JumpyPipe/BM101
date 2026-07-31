@@ -51,7 +51,7 @@ export default async function GrowthPage() {
               <Label htmlFor="headCm">Head circumference (cm)</Label>
               <Input id="headCm" name="headCm" type="number" min={0} step="0.1" />
             </div>
-            <div>
+            <div className="col-span-2 sm:col-span-1">
               <Label htmlFor="measuredAt">Date</Label>
               <Input
                 id="measuredAt"

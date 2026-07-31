@@ -16,8 +16,19 @@ export async function createCaregiver(formData: FormData) {
     role: formData.get("role"),
   });
   await prisma.caregiver.create({ data: parsed });
-  revalidatePath("/caregivers");
-  redirect("/caregivers");
+  revalidatePath("/babies");
+  redirect("/babies");
+}
+
+/** Used only by the "add a baby" guided flow's optional caregiver step. */
+export async function createCaregiverOnboarding(formData: FormData) {
+  const parsed = caregiverSchema.parse({
+    name: formData.get("name"),
+    role: formData.get("role"),
+  });
+  await prisma.caregiver.create({ data: parsed });
+  revalidatePath("/babies");
+  redirect("/");
 }
 
 export async function updateCaregiver(caregiverId: string, formData: FormData) {
@@ -26,12 +37,12 @@ export async function updateCaregiver(caregiverId: string, formData: FormData) {
     role: formData.get("role"),
   });
   await prisma.caregiver.update({ where: { id: caregiverId }, data: parsed });
-  revalidatePath("/caregivers");
-  redirect("/caregivers");
+  revalidatePath("/babies");
+  redirect("/babies");
 }
 
 export async function deleteCaregiver(formData: FormData) {
   const caregiverId = formData.get("caregiverId") as string;
   await prisma.caregiver.delete({ where: { id: caregiverId } });
-  revalidatePath("/caregivers");
+  revalidatePath("/babies");
 }

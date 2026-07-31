@@ -45,7 +45,7 @@ export default async function MilestonesPage() {
                 ))}
               </Select>
             </div>
-            <div>
+            <div className="col-span-2 sm:col-span-1">
               <Label htmlFor="occurredAt">Date</Label>
               <Input
                 id="occurredAt"

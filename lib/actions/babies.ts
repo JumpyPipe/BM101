@@ -27,7 +27,7 @@ export async function createBaby(formData: FormData) {
 
   await setCurrentBabyCookie(baby.id);
   revalidatePath("/", "layout");
-  redirect("/babies");
+  redirect(`/babies/new?step=caregiver&babyId=${baby.id}`);
 }
 
 export async function updateBaby(babyId: string, formData: FormData) {

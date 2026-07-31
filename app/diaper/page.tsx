@@ -44,7 +44,7 @@ export default async function DiaperPage() {
                 <option value="MIXED">Mixed</option>
               </Select>
             </div>
-            <div>
+            <div className="col-span-2 sm:col-span-1">
               <Label htmlFor="occurredAt">Time</Label>
               <Input
                 id="occurredAt"

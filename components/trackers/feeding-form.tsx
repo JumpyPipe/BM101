@@ -50,7 +50,7 @@ export function FeedingForm({ babyId }: { babyId: string }) {
         </div>
       )}
 
-      <div>
+      <div className="col-span-2 sm:col-span-1">
         <Label htmlFor="startedAt">Time</Label>
         <Input
           id="startedAt"

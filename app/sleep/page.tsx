@@ -41,7 +41,7 @@ export default async function SleepPage() {
                 <option value="NIGHT">Night sleep</option>
               </Select>
             </div>
-            <div>
+            <div className="col-span-2 sm:col-span-1">
               <Label htmlFor="startedAt">Start</Label>
               <Input
                 id="startedAt"
@@ -51,7 +51,7 @@ export default async function SleepPage() {
                 required
               />
             </div>
-            <div>
+            <div className="col-span-2 sm:col-span-1">
               <Label htmlFor="endedAt">End (leave blank if ongoing)</Label>
               <Input id="endedAt" name="endedAt" type="datetime-local" />
             </div>

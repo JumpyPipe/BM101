@@ -66,8 +66,8 @@ export default async function RootLayout({
       <body className="min-h-full bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-50">
         <div className="flex min-h-screen flex-col lg:flex-row">
           <header
-            className="flex items-center justify-between border-b border-zinc-200 bg-white px-4 py-3 dark:border-zinc-800 dark:bg-zinc-900 lg:hidden"
-            style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))" }}
+            className="sticky top-0 z-40 flex items-center justify-between border-b border-zinc-200 bg-white px-4 py-3 dark:border-zinc-800 dark:bg-zinc-900 lg:hidden"
+            style={{ paddingTop: "max(1rem, env(safe-area-inset-top))" }}
           >
             <Link href="/" className="font-fredoka flex items-center gap-2 text-lg font-semibold text-teal-700 dark:text-teal-400">
               <SnugMark className="h-6 w-6 text-teal-600" />

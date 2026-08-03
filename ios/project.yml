@@ -21,6 +21,9 @@ targets:
           # proper NSExceptionDomains entry for your real API host) before
           # shipping. See README.md.
           NSAllowsArbitraryLoads: true
+        NSCameraUsageDescription: "Snug uses your camera to take photos you can save to a Photos album."
+        NSPhotoLibraryUsageDescription: "Snug saves photos to a Photos album of your choice and lets you browse it in the app."
+        NSPhotoLibraryAddUsageDescription: "Snug saves captured photos to a Photos album of your choice."
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.bm101.app

@@ -26,6 +26,16 @@ final class NotificationManager: NSObject, ObservableObject {
     private static let snoozeActionId = "SNOOZE_ACTION"
     private static let snoozeInterval: TimeInterval = 15 * 60
 
+    private static let customReminderCategoryId = "CUSTOM_REMINDER"
+    private static func customReminderIdentifier(_ reminderId: String) -> String {
+        "bm101.reminder.custom.\(reminderId)"
+    }
+    /// Separate identifier for a one-off snooze so it doesn't clobber a
+    /// recurring (.daily/.interval) reminder's own pending trigger.
+    private static func customReminderSnoozeIdentifier(_ reminderId: String) -> String {
+        "bm101.reminder.custom.\(reminderId).snooze"
+    }
+
     /// Set by the app once a baby is selected, so a notification action
     /// (which arrives with no other context) knows which baby to log for.
     var activeBabyId: String?
@@ -57,7 +67,7 @@ final class NotificationManager: NSObject, ObservableObject {
         let snoozeAction = UNNotificationAction(
             identifier: Self.snoozeActionId, title: "Snooze 15m", options: []
         )
-        let categories = [ReminderKind.feeding, .sleep].map {
+        let predictionCategories = [ReminderKind.feeding, .sleep].map {
             UNNotificationCategory(
                 identifier: $0.categoryId,
                 actions: [logAction, snoozeAction],
@@ -65,7 +75,66 @@ final class NotificationManager: NSObject, ObservableObject {
                 options: []
             )
         }
-        UNUserNotificationCenter.current().setNotificationCategories(Set(categories))
+        let customCategory = UNNotificationCategory(
+            identifier: Self.customReminderCategoryId,
+            actions: [snoozeAction],
+            intentIdentifiers: [],
+            options: []
+        )
+        UNUserNotificationCenter.current().setNotificationCategories(
+            Set(predictionCategories + [customCategory])
+        )
+    }
+
+    // MARK: - Custom reminders (ReminderStore)
+
+    /// Schedules (replacing any existing) local notification(s) for a
+    /// user-defined reminder. `.daily` and `.interval` schedules repeat
+    /// indefinitely until cancelled; `.oneTime` fires once.
+    func scheduleCustomReminder(_ reminder: Reminder, asSnooze: Bool = false) {
+        let center = UNUserNotificationCenter.current()
+        let identifier = asSnooze
+            ? Self.customReminderSnoozeIdentifier(reminder.id)
+            : Self.customReminderIdentifier(reminder.id)
+        center.removePendingNotificationRequests(withIdentifiers: [identifier])
+        guard reminder.isEnabled else { return }
+
+        let content = UNMutableNotificationContent()
+        content.title = reminder.title
+        if !reminder.notes.isEmpty { content.body = reminder.notes }
+        content.categoryIdentifier = Self.customReminderCategoryId
+        content.sound = .default
+        content.userInfo = ["reminderId": reminder.id]
+
+        let trigger: UNNotificationTrigger
+        switch reminder.schedule {
+        case .oneTime(let date):
+            guard date > Date() else { return }
+            var comps = Calendar.current.dateComponents(
+                [.year, .month, .day, .hour, .minute], from: date
+            )
+            comps.second = 0
+            trigger = UNCalendarNotificationTrigger(dateMatching: comps, repeats: false)
+        case .daily(let hour, let minute):
+            var comps = DateComponents()
+            comps.hour = hour
+            comps.minute = minute
+            trigger = UNCalendarNotificationTrigger(dateMatching: comps, repeats: true)
+        case .interval(let seconds):
+            // UNTimeIntervalNotificationTrigger requires >= 60s for repeats.
+            trigger = UNTimeIntervalNotificationTrigger(
+                timeInterval: max(60, seconds), repeats: true
+            )
+        }
+
+        let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
+        center.add(request)
+    }
+
+    func cancelCustomReminder(id: String) {
+        UNUserNotificationCenter.current().removePendingNotificationRequests(
+            withIdentifiers: [Self.customReminderIdentifier(id), Self.customReminderSnoozeIdentifier(id)]
+        )
     }
 
     /// Schedules (replacing any existing) local notification for a predicted
@@ -137,23 +206,34 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
         didReceive response: UNNotificationResponse,
         withCompletionHandler completionHandler: @escaping () -> Void
     ) {
-        let rawKind = response.notification.request.content.userInfo["kind"] as? String
+        let userInfo = response.notification.request.content.userInfo
+        let rawKind = userInfo["kind"] as? String
+        let reminderId = userInfo["reminderId"] as? String
         let actionId = response.actionIdentifier
 
         Task { @MainActor in
-            guard let rawKind, let kind = ReminderKind(rawValue: rawKind) else {
-                completionHandler()
+            defer { completionHandler() }
+
+            if let rawKind, let kind = ReminderKind(rawValue: rawKind) {
+                switch actionId {
+                case Self.logActionId:
+                    await self.logQuickDefault(kind: kind)
+                case Self.snoozeActionId:
+                    self.snooze(kind: kind)
+                default:
+                    break // UNNotificationDefaultActionIdentifier — just opens the app
+                }
                 return
             }
-            switch actionId {
-            case Self.logActionId:
-                await self.logQuickDefault(kind: kind)
-            case Self.snoozeActionId:
-                self.snooze(kind: kind)
-            default:
-                break // UNNotificationDefaultActionIdentifier — just opens the app
+
+            if let reminderId, actionId == Self.snoozeActionId,
+               let reminder = ReminderStore.shared.reminders.first(where: { $0.id == reminderId }) {
+                var snoozed = reminder
+                snoozed.schedule = .oneTime(Date().addingTimeInterval(Self.snoozeInterval))
+                // Scheduled under a separate "snooze" identifier so a recurring
+                // (.daily/.interval) reminder's own trigger is left untouched.
+                self.scheduleCustomReminder(snoozed, asSnooze: true)
             }
-            completionHandler()
         }
     }
 }

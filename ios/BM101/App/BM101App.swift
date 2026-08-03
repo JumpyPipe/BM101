@@ -6,6 +6,10 @@ struct BM101App: App {
 
     init() {
         NotificationManager.shared.configure()
+        // Touch the singleton so persisted reminders re-arm their local
+        // notifications on every launch, not just when the Reminders screen
+        // is opened.
+        _ = ReminderStore.shared
     }
 
     var body: some Scene {

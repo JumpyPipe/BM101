@@ -54,6 +54,15 @@ struct MoreView: View {
                             }
                         }
                     }
+                    NavigationLink("Reminders") {
+                        RemindersView()
+                    }
+                }
+
+                Section("Photos") {
+                    NavigationLink("Photo Album") {
+                        PhotoAlbumView()
+                    }
                 }
 
                 if let errorMessage {

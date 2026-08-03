@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
+import { verifySession } from "@/lib/auth/current-caregiver";
 
 const milestoneSchema = z.object({
   babyId: z.string().min(1),
@@ -13,6 +14,7 @@ const milestoneSchema = z.object({
 });
 
 export async function createMilestone(formData: FormData) {
+  await verifySession();
   const parsed = milestoneSchema.parse({
     babyId: formData.get("babyId"),
     occurredAt: formData.get("occurredAt"),
@@ -30,6 +32,7 @@ export async function createMilestone(formData: FormData) {
 }
 
 export async function deleteMilestone(formData: FormData) {
+  await verifySession();
   const id = formData.get("id") as string;
   await prisma.milestone.delete({ where: { id } });
   revalidatePath("/milestones");

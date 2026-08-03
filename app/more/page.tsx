@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Baby as BabyIcon, TrendingUp, Sparkles, Users, ChevronRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { getCurrentCaregiver } from "@/lib/auth/current-caregiver";
+import { LogoutButton } from "@/components/auth/logout-button";
 
 const links = [
   { href: "/diaper", label: "Diaper", description: "Wet, dirty, and mixed changes", icon: BabyIcon },
@@ -9,7 +11,9 @@ const links = [
   { href: "/babies", label: "Babies & Caregivers", description: "Manage profiles", icon: Users },
 ];
 
-export default function MorePage() {
+export default async function MorePage() {
+  const caregiver = await getCurrentCaregiver();
+
   return (
     <div className="flex flex-col gap-6">
       <h1 className="font-fredoka text-2xl font-semibold">More</h1>
@@ -29,6 +33,15 @@ export default function MorePage() {
           </Link>
         ))}
       </div>
+      {caregiver && (
+        <Card className="flex flex-row items-center justify-between gap-3 p-4">
+          <div>
+            <p className="font-medium">Signed in as {caregiver.name}</p>
+            <p className="text-sm text-zinc-500">{caregiver.email}</p>
+          </div>
+          <LogoutButton />
+        </Card>
+      )}
     </div>
   );
 }

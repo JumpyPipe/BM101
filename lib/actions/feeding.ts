@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
+import { verifySession } from "@/lib/auth/current-caregiver";
 
 const feedingSchema = z.object({
   babyId: z.string().min(1),
@@ -15,6 +16,7 @@ const feedingSchema = z.object({
 });
 
 export async function createFeedingLog(formData: FormData) {
+  await verifySession();
   const parsed = feedingSchema.parse({
     babyId: formData.get("babyId"),
     type: formData.get("type"),
@@ -34,6 +36,7 @@ export async function createFeedingLog(formData: FormData) {
 }
 
 export async function deleteFeedingLog(formData: FormData) {
+  await verifySession();
   const id = formData.get("id") as string;
   await prisma.feedingLog.delete({ where: { id } });
   revalidatePath("/feeding");

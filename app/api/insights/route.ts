@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getAnthropicClient, summarizeBabyContext, CLAUDE_MODEL } from "@/lib/ai";
+import { verifySession } from "@/lib/auth/current-caregiver";
 
 const requestSchema = z.object({ babyId: z.string().min(1) });
 
@@ -28,6 +29,12 @@ const insightSchema = {
 };
 
 export async function POST(req: Request) {
+  try {
+    await verifySession();
+  } catch {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   let babyId: string;
   try {
     ({ babyId } = requestSchema.parse(await req.json()));

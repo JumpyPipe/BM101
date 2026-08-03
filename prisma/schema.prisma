@@ -43,8 +43,31 @@ model Caregiver {
   name String
   role String @default("Parent")
 
+  // Nullable: existing caregivers predate login and start out
+  // unclaimed (no way to sign in) until someone sets these via the
+  // bootstrap flow or the caregiver edit form.
+  email        String? @unique
+  passwordHash String?
+
+  credentials WebAuthnCredential[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model WebAuthnCredential {
+  id          String    @id @default(cuid())
+  caregiverId String
+  caregiver   Caregiver @relation(fields: [caregiverId], references: [id], onDelete: Cascade)
+
+  credentialId String @unique
+  publicKey    Bytes
+  counter      Int    @default(0)
+  deviceLabel  String?
+
+  createdAt DateTime @default(now())
+
+  @@index([caregiverId])
 }
 
 model FeedingLog {

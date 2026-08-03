@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { setCurrentBabyCookie } from "@/lib/current-baby";
+import { verifySession } from "@/lib/auth/current-caregiver";
 
 const babySchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -14,6 +15,7 @@ const babySchema = z.object({
 });
 
 export async function createBaby(formData: FormData) {
+  await verifySession();
   const parsed = babySchema.parse({
     name: formData.get("name"),
     dob: formData.get("dob"),
@@ -31,6 +33,7 @@ export async function createBaby(formData: FormData) {
 }
 
 export async function updateBaby(babyId: string, formData: FormData) {
+  await verifySession();
   const parsed = babySchema.parse({
     name: formData.get("name"),
     dob: formData.get("dob"),
@@ -48,6 +51,7 @@ export async function updateBaby(babyId: string, formData: FormData) {
 }
 
 export async function deleteBaby(formData: FormData) {
+  await verifySession();
   const babyId = formData.get("babyId") as string;
   await prisma.baby.delete({ where: { id: babyId } });
   revalidatePath("/", "layout");
@@ -55,6 +59,7 @@ export async function deleteBaby(formData: FormData) {
 }
 
 export async function selectBaby(formData: FormData) {
+  await verifySession();
   const babyId = formData.get("babyId") as string;
   await setCurrentBabyCookie(babyId);
   revalidatePath("/", "layout");

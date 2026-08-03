@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
+import { verifySession } from "@/lib/auth/current-caregiver";
 
 const growthSchema = z.object({
   babyId: z.string().min(1),
@@ -14,6 +15,7 @@ const growthSchema = z.object({
 });
 
 export async function createGrowthLog(formData: FormData) {
+  await verifySession();
   const parsed = growthSchema.parse({
     babyId: formData.get("babyId"),
     measuredAt: formData.get("measuredAt"),
@@ -32,6 +34,7 @@ export async function createGrowthLog(formData: FormData) {
 }
 
 export async function deleteGrowthLog(formData: FormData) {
+  await verifySession();
   const id = formData.get("id") as string;
   await prisma.growthLog.delete({ where: { id } });
   revalidatePath("/growth");

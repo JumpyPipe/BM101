@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getAnthropicClient, summarizeBabyContext, CLAUDE_MODEL } from "@/lib/ai";
+import { verifySession } from "@/lib/auth/current-caregiver";
 
 const requestSchema = z.object({
   babyId: z.string().min(1),
@@ -8,6 +9,12 @@ const requestSchema = z.object({
 });
 
 export async function POST(req: Request) {
+  try {
+    await verifySession();
+  } catch {
+    return new Response("Unauthorized", { status: 401 });
+  }
+
   let body: { babyId: string; message: string };
   try {
     body = requestSchema.parse(await req.json());

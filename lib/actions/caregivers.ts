@@ -4,6 +4,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
+import { verifySession } from "@/lib/auth/current-caregiver";
 
 const caregiverSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -11,6 +12,7 @@ const caregiverSchema = z.object({
 });
 
 export async function createCaregiver(formData: FormData) {
+  await verifySession();
   const parsed = caregiverSchema.parse({
     name: formData.get("name"),
     role: formData.get("role"),
@@ -22,6 +24,7 @@ export async function createCaregiver(formData: FormData) {
 
 /** Used only by the "add a baby" guided flow's optional caregiver step. */
 export async function createCaregiverOnboarding(formData: FormData) {
+  await verifySession();
   const parsed = caregiverSchema.parse({
     name: formData.get("name"),
     role: formData.get("role"),
@@ -32,6 +35,7 @@ export async function createCaregiverOnboarding(formData: FormData) {
 }
 
 export async function updateCaregiver(caregiverId: string, formData: FormData) {
+  await verifySession();
   const parsed = caregiverSchema.parse({
     name: formData.get("name"),
     role: formData.get("role"),
@@ -42,6 +46,7 @@ export async function updateCaregiver(caregiverId: string, formData: FormData) {
 }
 
 export async function deleteCaregiver(formData: FormData) {
+  await verifySession();
   const caregiverId = formData.get("caregiverId") as string;
   await prisma.caregiver.delete({ where: { id: caregiverId } });
   revalidatePath("/babies");

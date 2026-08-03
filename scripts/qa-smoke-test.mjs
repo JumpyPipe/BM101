@@ -46,6 +46,26 @@ async function main() {
   });
   page.on("pageerror", (err) => consoleErrors.push(`${page.url()} :: ${err.message}`));
 
+  // --- 0. Sign in first — every other route is behind auth now. Claim a login
+  // if this is a fresh/unclaimed database, otherwise sign in with it. ---
+  await page.goto(`${BASE_URL}/setup`, { waitUntil: "load" });
+  const onSetup = page.url().endsWith("/setup");
+  if (onSetup && (await page.locator("select#caregiverId").count()) > 0) {
+    await page.selectOption("select#caregiverId", { index: 1 });
+    await page.fill("#email", "qa-smoke-test@example.com");
+    await page.fill("#password", "qa-smoke-test-password");
+    await page.click('button[type="submit"]');
+    await page.waitForURL(`${BASE_URL}/`, { timeout: 10000 });
+    record("auth: claim login via /setup", true);
+  } else {
+    await page.goto(`${BASE_URL}/login`, { waitUntil: "load" });
+    await page.fill("#email", "qa-smoke-test@example.com");
+    await page.fill("#password", "qa-smoke-test-password");
+    await page.click('button[type="submit"]');
+    await page.waitForURL(`${BASE_URL}/`, { timeout: 10000 });
+    record("auth: sign in via /login", true);
+  }
+
   // --- 1. Every nav destination loads without a 404/error, no loading spinner stuck ---
   const navPages = [
     "/", "/feeding", "/sleep", "/diaper", "/growth", "/milestones",
@@ -72,7 +92,7 @@ async function main() {
   await page.goto(`${BASE_URL}/babies/new`, { waitUntil: "load" });
   await page.fill('input[name="name"]', "QA Test Baby");
   await page.fill('input[name="dob"]', "2026-01-01");
-  await page.click('button[type="submit"]');
+  await page.locator("main form button[type=\"submit\"]").click();
   await page.waitForTimeout(1500);
   const onCaregiverStep = (await page.locator("text=is all set!").count()) > 0;
   record("add-baby step 1 -> step 2 transition", onCaregiverStep, onCaregiverStep ? "" : "did not land on caregiver step");
@@ -90,7 +110,7 @@ async function main() {
   // --- 4. Add a caregiver directly (the bug that was reported) ---
   await page.goto(`${BASE_URL}/caregivers/new`, { waitUntil: "load" });
   await page.fill('input[name="name"]', "QA Test Caregiver");
-  await page.click('button[type="submit"]');
+  await page.locator("main form button[type=\"submit\"]").click();
   await page.waitForTimeout(1500);
   const caregiverOk = await checkForErrorPage(page, "add caregiver -> redirect target");
   if (caregiverOk) {

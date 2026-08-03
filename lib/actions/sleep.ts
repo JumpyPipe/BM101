@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
+import { verifySession } from "@/lib/auth/current-caregiver";
 
 const sleepSchema = z.object({
   babyId: z.string().min(1),
@@ -13,6 +14,7 @@ const sleepSchema = z.object({
 });
 
 export async function createSleepLog(formData: FormData) {
+  await verifySession();
   const parsed = sleepSchema.parse({
     babyId: formData.get("babyId"),
     type: formData.get("type"),
@@ -34,6 +36,7 @@ export async function createSleepLog(formData: FormData) {
 }
 
 export async function endSleepLog(formData: FormData) {
+  await verifySession();
   const id = formData.get("id") as string;
   await prisma.sleepLog.update({ where: { id }, data: { endedAt: new Date() } });
   revalidatePath("/sleep");
@@ -41,6 +44,7 @@ export async function endSleepLog(formData: FormData) {
 }
 
 export async function deleteSleepLog(formData: FormData) {
+  await verifySession();
   const id = formData.get("id") as string;
   await prisma.sleepLog.delete({ where: { id } });
   revalidatePath("/sleep");

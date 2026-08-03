@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
+import { verifySession } from "@/lib/auth/current-caregiver";
 
 const diaperSchema = z.object({
   babyId: z.string().min(1),
@@ -12,6 +13,7 @@ const diaperSchema = z.object({
 });
 
 export async function createDiaperLog(formData: FormData) {
+  await verifySession();
   const parsed = diaperSchema.parse({
     babyId: formData.get("babyId"),
     type: formData.get("type"),
@@ -29,6 +31,7 @@ export async function createDiaperLog(formData: FormData) {
 
 /** One-tap logging used by the dashboard quick actions — defaults to "now". */
 export async function quickLogDiaper(formData: FormData) {
+  await verifySession();
   const babyId = formData.get("babyId") as string;
   const type = formData.get("type") as "WET" | "DIRTY" | "MIXED";
   await prisma.diaperLog.create({
@@ -39,6 +42,7 @@ export async function quickLogDiaper(formData: FormData) {
 }
 
 export async function deleteDiaperLog(formData: FormData) {
+  await verifySession();
   const id = formData.get("id") as string;
   await prisma.diaperLog.delete({ where: { id } });
   revalidatePath("/diaper");

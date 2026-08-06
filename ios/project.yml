@@ -18,6 +18,7 @@ targets:
         NSCameraUsageDescription: "Snug uses your camera to take photos you can save to a Photos album."
         NSPhotoLibraryUsageDescription: "Snug saves photos to a Photos album of your choice and lets you browse it in the app."
         NSPhotoLibraryAddUsageDescription: "Snug saves captured photos to a Photos album of your choice."
+        NSFaceIDUsageDescription: "Snug can use Face ID to quickly and securely unlock your baby's data."
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.bm101.app

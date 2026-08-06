@@ -3,6 +3,7 @@ import SwiftUI
 struct MoreView: View {
     @EnvironmentObject private var appState: AppState
     @StateObject private var notificationManager = NotificationManager.shared
+    @StateObject private var authManager = AuthManager.shared
     @State private var caregivers: [Caregiver] = []
     @State private var showingAddBaby = false
     @State private var showingAddCaregiver = false
@@ -63,6 +64,26 @@ struct MoreView: View {
                     NavigationLink("Photo Album") {
                         PhotoAlbumView()
                     }
+                }
+
+                Section("Security") {
+                    if let name = authManager.caregiverName {
+                        HStack {
+                            Text("Signed in as")
+                            Spacer()
+                            Text(name).foregroundStyle(.secondary)
+                        }
+                    }
+                    if authManager.biometryAvailable {
+                        Toggle(
+                            "\(authManager.biometryTypeLabel) Unlock",
+                            isOn: Binding(
+                                get: { authManager.faceIDEnabled },
+                                set: { authManager.faceIDEnabled = $0 }
+                            )
+                        )
+                    }
+                    Button("Log Out", role: .destructive) { authManager.logout() }
                 }
 
                 if let errorMessage {

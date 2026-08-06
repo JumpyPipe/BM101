@@ -38,36 +38,51 @@ xcodegen generate
 open BM101.xcodeproj
 ```
 
-Then in Xcode: select a Simulator (e.g. iPhone 15), and Run (⌘R).
+Then in Xcode: select a Simulator (e.g. iPhone 15) or your own iPhone, and
+Run (⌘R).
 
-The Simulator can reach your Mac's `npm run dev` via `http://localhost:3000`
-directly — `Services/AppConfig.swift` is already pointed there. **A physical
-device cannot reach `localhost`** — it means the device itself. Change
-`AppConfig.apiBaseURL` to your Mac's LAN IP (e.g.
-`http://192.168.1.23:3000/api/v1`) and make sure both are on the same
-network.
+`Services/AppConfig.swift` points at the deployed backend
+(`https://cv-fec46dd68ed4.ewr.prisma.build/api/v1`) by default, so both the
+Simulator and a physical device work out of the box with no LAN setup. To
+point at a local `npm run dev` instead: the Simulator can reach
+`http://localhost:3000/api/v1` directly; a physical device needs your Mac's
+LAN IP (e.g. `http://192.168.1.23:3000/api/v1`) since "localhost" from the
+device's own perspective means the device itself. If you do this, you'll
+also need to re-add an ATS exception in `project.yml`
+(`NSAppTransportSecurity.NSAllowsArbitraryLoads: true`) since iOS blocks
+plaintext HTTP by default — it was removed once `AppConfig` moved to a real
+HTTPS backend.
 
-## Why HTTP, not HTTPS, in dev
+## Login & Face ID
 
-The backend runs plain HTTP locally. iOS's App Transport Security blocks
-plaintext HTTP by default, so `project.yml` sets
-`NSAppTransportSecurity.NSAllowsArbitraryLoads: true` for now. **Tighten
-this before shipping** — replace it with an `NSExceptionDomains` entry
-scoped to your real API host once it's HTTPS, or remove the exception
-entirely if the backend moves behind HTTPS in dev too (e.g. via `mkcert` or
-an ngrok tunnel).
+The API now requires auth (`POST /api/v1/auth/login`, bearer token stored
+in the Keychain) — every other `/api/v1` route 401s without it. **You need
+a caregiver login set up first, from the web app**: visit the deployed
+site's `/setup` (first caregiver ever) or a caregiver's "Login & security"
+section under Babies → Caregivers → Edit, set an email/password, then use
+those same credentials to sign in on iOS. There's no separate iOS-only
+signup flow — it's the same caregiver accounts either way.
+
+Face ID/Touch ID (More → Security, only shown if the device has one
+enrolled) is an optional fast-unlock layer on top of that login — same
+framing as the web app's WebAuthn passkey, implemented natively via
+`LocalAuthentication` instead (the right API for a native app; WebAuthn is
+a browser-platform mechanism). It gates re-entry to already-fetched app
+state, not a second credential — logging out always requires the
+password again.
 
 ## What's here vs. what's not
 
-Implemented: dashboard (predictions, quick diaper log, recent activity,
-tips), a unified log screen (structured forms + free-text "quick note"
-parsed by Claude), history browsing per log type, assistant chat, baby/
-caregiver management, local notifications for predicted feed/sleep windows
-with in-notification "Logged ✓" / "Snooze 15m" actions, custom reminders
-(More → Reminders — one-time, daily, or repeating-interval, e.g. "pump
-every 3 hours"), and a Photos integration (More → Photo Album) to take a
-photo, save it into a Photos album of your choice, browse that album
-in-app, switch which album is the "album of choice", and create new albums.
+Implemented: login + Face ID (see above), dashboard (predictions, quick
+diaper log, recent activity, tips), a unified log screen (structured forms
++ free-text "quick note" parsed by Claude), history browsing per log type,
+assistant chat, baby/caregiver management, local notifications for
+predicted feed/sleep windows with in-notification "Logged ✓" / "Snooze
+15m" actions, custom reminders (More → Reminders — one-time, daily, or
+repeating-interval, e.g. "pump every 3 hours"), and a Photos integration
+(More → Photo Album) to take a photo, save it into a Photos album of your
+choice, browse that album in-app, switch which album is the "album of
+choice", and create new albums.
 
 **Reminders and predicted-event notifications are local (`UNUserNotificationCenter`)**,
 scheduled on-device — not remote/APNs push. True push (server-initiated,
@@ -104,10 +119,10 @@ capture (Photos integration is photos only).
 ios/
   project.yml              XcodeGen manifest — edit this, not a .xcodeproj
   BM101/
-    App/                   App entry point, root tab view
+    App/                   App entry point, auth-gated root scene
     Models/                Codable structs mirroring the API's JSON
-    Services/               Networking (APIClient), notifications, photos, config
+    Services/               Networking (APIClient), auth, Keychain, notifications, photos, config
     State/                 AppState — current baby, babies list
     Views/
-      Dashboard/  Log/  History/  Assistant/  More/  Photos/  Reminders/  Shared/
+      Auth/  Dashboard/  Log/  History/  Assistant/  More/  Photos/  Reminders/  Shared/
 ```

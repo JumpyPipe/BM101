@@ -39,7 +39,8 @@ final class APIClient {
         _ path: String,
         method: String,
         query: [String: String],
-        bodyData: Data?
+        bodyData: Data?,
+        requiresAuth: Bool = true
     ) async throws -> Response {
         var components = URLComponents(
             url: baseURL.appendingPathComponent(path), resolvingAgainstBaseURL: false
@@ -50,6 +51,9 @@ final class APIClient {
 
         var request = URLRequest(url: components.url!)
         request.httpMethod = method
+        if requiresAuth, let token = await AuthManager.shared.token {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
         if let bodyData {
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
             request.httpBody = bodyData
@@ -64,6 +68,12 @@ final class APIClient {
         }
 
         let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
+        if statusCode == 401 && requiresAuth {
+            // The token is missing/invalid/expired server-side — drop it
+            // locally too, so the app falls back to the login screen
+            // instead of silently failing every subsequent request.
+            await AuthManager.shared.handleUnauthorized()
+        }
         guard (200..<300).contains(statusCode) else {
             let message = (try? JSONDecoder.api.decode(APIErrorBody.self, from: data))?.error
                 ?? "Request failed (\(statusCode))"
@@ -92,6 +102,15 @@ final class APIClient {
 
     private func post<Response: Decodable>(_ path: String) async throws -> Response {
         try await sendRaw(path, method: "POST", query: [:], bodyData: nil)
+    }
+
+    // MARK: - Auth
+
+    func login(email: String, password: String) async throws -> LoginResponse {
+        let bodyData = try JSONEncoder.api.encode(LoginRequest(email: email, password: password))
+        return try await sendRaw(
+            "auth/login", method: "POST", query: [:], bodyData: bodyData, requiresAuth: false
+        )
     }
 
     // MARK: - Babies

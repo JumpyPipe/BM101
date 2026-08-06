@@ -1,9 +1,14 @@
 import Foundation
 
 enum AppConfig {
-    /// Points at the Next.js backend's `/api/v1` surface (see repo root
-    /// `app/api/v1/`). The iOS Simulator can reach a host-machine `npm run
-    /// dev` via `localhost`; a physical device needs your Mac's LAN IP
-    /// instead (e.g. "http://192.168.1.23:3000/api/v1").
-    static let apiBaseURL = URL(string: "http://localhost:3000/api/v1")!
+    /// Points at the deployed Next.js backend's `/api/v1` surface (see repo
+    /// root `app/api/v1/`), so the app works from a physical device on any
+    /// network — not just the Simulator on the same Mac as `npm run dev`.
+    ///
+    /// To point at a local dev server instead (Simulator only, or a
+    /// physical device on the same LAN as your Mac), swap this for
+    /// `http://localhost:3000/api/v1` (Simulator) or your Mac's LAN IP
+    /// (physical device) — and re-add the ATS exception in `project.yml`
+    /// if you do, since plain HTTP is blocked by default.
+    static let apiBaseURL = URL(string: "https://cv-fec46dd68ed4.ewr.prisma.build/api/v1")!
 }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { handleRoute, jsonError } from "@/lib/api-helpers";
+import { requireApiCaregiver } from "@/lib/auth/api-auth";
 
 const updateSchema = z.object({
   name: z.string().min(1).optional(),
@@ -10,8 +11,9 @@ const updateSchema = z.object({
   notes: z.string().nullable().optional(),
 });
 
-export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   return handleRoute(async () => {
+    await requireApiCaregiver(req);
     const { id } = await params;
     const baby = await prisma.baby.findUnique({ where: { id } });
     if (!baby) return jsonError("Baby not found", 404);
@@ -21,6 +23,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   return handleRoute(async () => {
+    await requireApiCaregiver(req);
     const { id } = await params;
     const body = updateSchema.parse(await req.json());
     const baby = await prisma.baby.update({
@@ -31,8 +34,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   });
 }
 
-export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   return handleRoute(async () => {
+    await requireApiCaregiver(req);
     const { id } = await params;
     await prisma.baby.delete({ where: { id } });
     return NextResponse.json({ ok: true });

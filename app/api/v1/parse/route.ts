@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { handleRoute, jsonError } from "@/lib/api-helpers";
 import { getAnthropicClient, CLAUDE_MODEL } from "@/lib/ai";
+import { requireApiCaregiver } from "@/lib/auth/api-auth";
 import type Anthropic from "@anthropic-ai/sdk";
 
 const requestSchema = z.object({
@@ -45,6 +46,7 @@ const logEventTool: Anthropic.Tool = {
 
 export async function POST(req: Request) {
   return handleRoute(async () => {
+    await requireApiCaregiver(req);
     const { babyId, text } = requestSchema.parse(await req.json());
 
     let anthropic;

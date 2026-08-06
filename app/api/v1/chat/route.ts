@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { handleRoute, jsonError } from "@/lib/api-helpers";
 import { getAnthropicClient, summarizeBabyContext, CLAUDE_MODEL } from "@/lib/ai";
+import { requireApiCaregiver } from "@/lib/auth/api-auth";
 
 const requestSchema = z.object({
   babyId: z.string().min(1),
@@ -11,6 +12,7 @@ const requestSchema = z.object({
 
 export async function POST(req: Request) {
   return handleRoute(async () => {
+    await requireApiCaregiver(req);
     const { babyId, message } = requestSchema.parse(await req.json());
 
     let anthropic;

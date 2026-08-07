@@ -5,10 +5,11 @@ import { Plus } from "lucide-react";
 import "./globals.css";
 import { getCurrentBaby } from "@/lib/current-baby";
 import { getCurrentCaregiver } from "@/lib/auth/current-caregiver";
-import { getCurrentHousehold } from "@/lib/household";
+import { getCurrentHousehold, getHouseholdsForCaregiver } from "@/lib/household";
 import { SidebarNav } from "@/components/dashboard/sidebar-nav";
 import { BottomNav } from "@/components/dashboard/bottom-nav";
 import { BabySwitcher } from "@/components/dashboard/baby-switcher";
+import { HouseholdSwitcher } from "@/components/dashboard/household-switcher";
 import { Button } from "@/components/ui/button";
 import { SnugMark } from "@/components/ui/snug-mark";
 import { LogoutButton } from "@/components/auth/logout-button";
@@ -79,7 +80,10 @@ export default async function RootLayout({
   // A caregiver always has a household by the time they're signed in
   // (signup and invite-acceptance both create the membership) — this null
   // case is only a defensive fallback, not an expected path.
-  const household = await getCurrentHousehold(caregiver.id);
+  const [household, households] = await Promise.all([
+    getCurrentHousehold(caregiver.id),
+    getHouseholdsForCaregiver(caregiver.id),
+  ]);
   const { babies, current } = household
     ? await getCurrentBaby(household.id)
     : { babies: [], current: null };
@@ -99,7 +103,12 @@ export default async function RootLayout({
               <SnugMark className="h-6 w-6 text-teal-600" />
               Snug
             </Link>
-            {current && <BabySwitcher babies={babies} currentId={current.id} />}
+            <div className="flex items-center gap-2">
+              {household && (
+                <HouseholdSwitcher households={households} currentId={household.id} />
+              )}
+              {current && <BabySwitcher babies={babies} currentId={current.id} />}
+            </div>
           </header>
 
           <aside className="hidden border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 lg:flex lg:w-64 lg:shrink-0 lg:flex-col lg:border-r">
@@ -107,6 +116,11 @@ export default async function RootLayout({
               <SnugMark className="h-6 w-6 text-teal-600" />
               Snug
             </div>
+            {household && households.length > 1 && (
+              <div className="px-3 pt-4">
+                <HouseholdSwitcher households={households} currentId={household.id} />
+              </div>
+            )}
             <div className="px-3 pt-4">
               {current ? (
                 <BabySwitcher babies={babies} currentId={current.id} />

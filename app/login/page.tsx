@@ -10,10 +10,10 @@ export default async function LoginPage({
 }: {
   searchParams: Promise<{ next?: string; error?: string }>;
 }) {
-  const caregiverId = await getSessionCaregiverId();
-  if (caregiverId) redirect("/");
-
   const { next, error } = await searchParams;
+
+  const caregiverId = await getSessionCaregiverId();
+  if (caregiverId) redirect(next && next.startsWith("/") && !next.startsWith("//") ? next : "/");
 
   return (
     <div className="flex w-full max-w-sm flex-col items-center gap-6">
@@ -29,7 +29,7 @@ export default async function LoginPage({
           Couldn&rsquo;t sign you in that way. Try again, or use email and password.
         </p>
       )}
-      <OAuthButtons>
+      <OAuthButtons nextPath={next}>
         <LoginForm nextPath={next} />
       </OAuthButtons>
       <p className="text-center text-sm text-zinc-500">

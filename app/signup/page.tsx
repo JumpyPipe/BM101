@@ -5,9 +5,15 @@ import { SignUpForm } from "@/components/auth/signup-form";
 import { OAuthButtons } from "@/components/auth/oauth-buttons";
 import { SnugMark } from "@/components/ui/snug-mark";
 
-export default async function SignUpPage() {
+export default async function SignUpPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string }>;
+}) {
+  const { next } = await searchParams;
+
   const caregiverId = await getSessionCaregiverId();
-  if (caregiverId) redirect("/");
+  if (caregiverId) redirect(next && next.startsWith("/") && !next.startsWith("//") ? next : "/");
 
   return (
     <div className="flex w-full max-w-sm flex-col items-center gap-6">
@@ -20,8 +26,8 @@ export default async function SignUpPage() {
           Starts your own private family. Add babies and invite caregivers once you&rsquo;re in.
         </p>
       </div>
-      <OAuthButtons>
-        <SignUpForm />
+      <OAuthButtons nextPath={next}>
+        <SignUpForm nextPath={next} />
       </OAuthButtons>
       <p className="text-center text-sm text-zinc-500">
         Already have an account?{" "}

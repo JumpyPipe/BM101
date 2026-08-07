@@ -7,7 +7,13 @@ import { signInWithGoogle, signInWithApple } from "@/lib/actions/oauth";
  * `children` (the password form) so the "or" divider only appears when at
  * least one provider is actually enabled.
  */
-export function OAuthButtons({ children }: { children?: React.ReactNode }) {
+export function OAuthButtons({
+  children,
+  nextPath,
+}: {
+  children?: React.ReactNode;
+  nextPath?: string;
+}) {
   const googleEnabled = !!(process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET);
   const appleEnabled = !!(process.env.AUTH_APPLE_ID && process.env.AUTH_APPLE_SECRET);
 
@@ -17,7 +23,7 @@ export function OAuthButtons({ children }: { children?: React.ReactNode }) {
     <div className="flex w-full flex-col gap-5">
       <div className="flex w-full flex-col gap-2">
         {googleEnabled && (
-          <form action={signInWithGoogle}>
+          <form action={signInWithGoogle.bind(null, nextPath)}>
             <button
               type="submit"
               className="flex h-11 w-full items-center justify-center gap-2 rounded-full border border-zinc-300 bg-white text-sm font-medium text-zinc-900 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
@@ -28,7 +34,7 @@ export function OAuthButtons({ children }: { children?: React.ReactNode }) {
           </form>
         )}
         {appleEnabled && (
-          <form action={signInWithApple}>
+          <form action={signInWithApple.bind(null, nextPath)}>
             <button
               type="submit"
               className="flex h-11 w-full items-center justify-center gap-2 rounded-full bg-black text-sm font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"

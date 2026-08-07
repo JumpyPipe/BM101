@@ -2,10 +2,14 @@
 
 import { signIn } from "@/auth";
 
-export async function signInWithGoogle() {
-  await signIn("google", { redirectTo: "/" });
+function safeNext(nextPath?: string): string {
+  return nextPath && nextPath.startsWith("/") && !nextPath.startsWith("//") ? nextPath : "/";
 }
 
-export async function signInWithApple() {
-  await signIn("apple", { redirectTo: "/" });
+export async function signInWithGoogle(nextPath?: string) {
+  await signIn("google", { redirectTo: safeNext(nextPath) });
+}
+
+export async function signInWithApple(nextPath?: string) {
+  await signIn("apple", { redirectTo: safeNext(nextPath) });
 }

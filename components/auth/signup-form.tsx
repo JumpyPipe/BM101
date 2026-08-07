@@ -5,11 +5,12 @@ import { signUp, type ActionState } from "@/lib/actions/auth";
 import { Input, Label } from "@/components/ui/input";
 import { SubmitButton } from "@/components/ui/submit-button";
 
-export function SignUpForm() {
+export function SignUpForm({ nextPath }: { nextPath?: string }) {
   const [state, formAction] = useActionState<ActionState, FormData>(signUp, null);
 
   return (
     <form action={formAction} className="flex w-full flex-col gap-4">
+      <input type="hidden" name="next" value={nextPath ?? ""} />
       <div>
         <Label htmlFor="name">Your name</Label>
         <Input id="name" name="name" autoComplete="name" required />

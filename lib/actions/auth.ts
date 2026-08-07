@@ -56,18 +56,23 @@ const signUpSchema = z.object({
   name: z.string().trim().min(1, "Name is required"),
   email: z.string().email("Enter a valid email"),
   password: z.string().min(8, "Password must be at least 8 characters"),
+  next: z.string().optional(),
 });
 
 /**
  * Open self-serve signup — always creates a brand-new, isolated household
  * with this caregiver as its owner (see lib/auth/signup.ts). Joining an
- * existing household only ever happens via an explicit invite link.
+ * existing household only ever happens via an explicit invite link. `next`
+ * (e.g. /invite/<token>) lets someone who followed an invite link while
+ * signed out land back on it to actually accept it, instead of being
+ * dropped on their own new household's dashboard.
  */
 export async function signUp(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   const parsed = signUpSchema.safeParse({
     name: formData.get("name"),
     email: formData.get("email"),
     password: formData.get("password"),
+    next: formData.get("next") || undefined,
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
@@ -85,7 +90,8 @@ export async function signUp(_prevState: ActionState, formData: FormData): Promi
 
   await createSession(result.caregiverId);
   await setCurrentHouseholdCookie(result.householdId);
-  redirect("/");
+  const next = parsed.data.next;
+  redirect(next && next.startsWith("/") && !next.startsWith("//") ? next : "/");
 }
 
 const claimSchema = z.object({

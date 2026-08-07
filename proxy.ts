@@ -5,6 +5,10 @@ const SESSION_COOKIE_NAME = "snug_session";
 
 function isPublicPath(pathname: string): boolean {
   if (pathname === "/login" || pathname === "/signup" || pathname === "/setup") return true;
+  // Invite links are followed by signed-out visitors — the page itself
+  // prompts them to sign in/up (with `next` pointing back here) before
+  // actually accepting.
+  if (pathname.startsWith("/invite/")) return true;
   if (pathname === "/manifest.webmanifest" || pathname === "/icon.png") return true;
   if (pathname.startsWith("/api/v1/")) return true;
   if (pathname.startsWith("/api/auth/")) return true;

@@ -1,4 +1,5 @@
 import { getCurrentBaby } from "@/lib/current-baby";
+import { requireCurrentHousehold } from "@/lib/household";
 import { prisma } from "@/lib/db";
 import { createMilestone, deleteMilestone } from "@/lib/actions/milestones";
 import { formatDate, toDatetimeLocal } from "@/lib/format";
@@ -12,7 +13,8 @@ import { EmptyBabyState } from "@/components/dashboard/empty-baby-state";
 const categories = ["Motor", "Social", "Language", "Cognitive", "Feeding", "Other"];
 
 export default async function MilestonesPage() {
-  const { current } = await getCurrentBaby();
+  const { household } = await requireCurrentHousehold();
+  const { current } = await getCurrentBaby(household.id);
   if (!current) return <EmptyBabyState />;
 
   const milestones = await prisma.milestone.findMany({

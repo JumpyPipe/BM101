@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { Plus, Check } from "lucide-react";
+import { Plus, Check, UserPlus } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { getCurrentBaby } from "@/lib/current-baby";
+import { requireCurrentHousehold } from "@/lib/household";
 import { deleteBaby, selectBaby } from "@/lib/actions/babies";
 import { deleteCaregiver } from "@/lib/actions/caregivers";
 import { formatAge, formatDate } from "@/lib/format";
@@ -12,8 +13,14 @@ import { SubmitButton } from "@/components/ui/submit-button";
 import { DeleteButton } from "@/components/trackers/delete-button";
 
 export default async function BabiesPage() {
-  const { babies, current } = await getCurrentBaby();
-  const caregivers = await prisma.caregiver.findMany({ orderBy: { createdAt: "asc" } });
+  const { household } = await requireCurrentHousehold();
+  const { babies, current } = await getCurrentBaby(household.id);
+  const memberships = await prisma.householdMembership.findMany({
+    where: { householdId: household.id },
+    include: { caregiver: true },
+    orderBy: { createdAt: "asc" },
+  });
+  const caregivers = memberships.map((m) => m.caregiver);
 
   return (
     <div className="flex flex-col gap-8">
@@ -70,16 +77,23 @@ export default async function BabiesPage() {
 
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Caregivers</h2>
-        <Link href="/caregivers/new">
-          <Button size="sm" variant="outline">
-            <Plus className="h-4 w-4" /> Add caregiver
-          </Button>
-        </Link>
+        <div className="flex gap-2">
+          <Link href="/babies/invite">
+            <Button size="sm" variant="outline">
+              <UserPlus className="h-4 w-4" /> Invite
+            </Button>
+          </Link>
+          <Link href="/caregivers/new">
+            <Button size="sm" variant="outline">
+              <Plus className="h-4 w-4" /> Add caregiver
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Who logs for this baby</CardTitle>
+          <CardTitle>Who&rsquo;s in {household.name}</CardTitle>
         </CardHeader>
         <CardContent>
           {caregivers.length === 0 ? (

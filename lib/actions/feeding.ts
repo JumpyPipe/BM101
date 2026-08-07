@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
-import { verifySession } from "@/lib/auth/current-caregiver";
+import { requireCurrentHousehold, requireHouseholdBaby } from "@/lib/household";
 
 const feedingSchema = z.object({
   babyId: z.string().min(1),
@@ -16,7 +16,7 @@ const feedingSchema = z.object({
 });
 
 export async function createFeedingLog(formData: FormData) {
-  await verifySession();
+  const { caregiverId } = await requireCurrentHousehold();
   const parsed = feedingSchema.parse({
     babyId: formData.get("babyId"),
     type: formData.get("type"),
@@ -26,6 +26,7 @@ export async function createFeedingLog(formData: FormData) {
     startedAt: formData.get("startedAt"),
     note: formData.get("note") || undefined,
   });
+  await requireHouseholdBaby(caregiverId, parsed.babyId);
 
   await prisma.feedingLog.create({
     data: { ...parsed, startedAt: new Date(parsed.startedAt) },
@@ -36,8 +37,11 @@ export async function createFeedingLog(formData: FormData) {
 }
 
 export async function deleteFeedingLog(formData: FormData) {
-  await verifySession();
+  const { caregiverId } = await requireCurrentHousehold();
   const id = formData.get("id") as string;
+  const log = await prisma.feedingLog.findUnique({ where: { id }, select: { babyId: true } });
+  if (!log) return;
+  await requireHouseholdBaby(caregiverId, log.babyId);
   await prisma.feedingLog.delete({ where: { id } });
   revalidatePath("/feeding");
   revalidatePath("/");

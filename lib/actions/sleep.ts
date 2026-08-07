@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
-import { verifySession } from "@/lib/auth/current-caregiver";
+import { requireCurrentHousehold, requireHouseholdBaby } from "@/lib/household";
 
 const sleepSchema = z.object({
   babyId: z.string().min(1),
@@ -14,7 +14,7 @@ const sleepSchema = z.object({
 });
 
 export async function createSleepLog(formData: FormData) {
-  await verifySession();
+  const { caregiverId } = await requireCurrentHousehold();
   const parsed = sleepSchema.parse({
     babyId: formData.get("babyId"),
     type: formData.get("type"),
@@ -22,6 +22,7 @@ export async function createSleepLog(formData: FormData) {
     endedAt: formData.get("endedAt") || undefined,
     note: formData.get("note") || undefined,
   });
+  await requireHouseholdBaby(caregiverId, parsed.babyId);
 
   await prisma.sleepLog.create({
     data: {
@@ -36,16 +37,22 @@ export async function createSleepLog(formData: FormData) {
 }
 
 export async function endSleepLog(formData: FormData) {
-  await verifySession();
+  const { caregiverId } = await requireCurrentHousehold();
   const id = formData.get("id") as string;
+  const log = await prisma.sleepLog.findUnique({ where: { id }, select: { babyId: true } });
+  if (!log) return;
+  await requireHouseholdBaby(caregiverId, log.babyId);
   await prisma.sleepLog.update({ where: { id }, data: { endedAt: new Date() } });
   revalidatePath("/sleep");
   revalidatePath("/");
 }
 
 export async function deleteSleepLog(formData: FormData) {
-  await verifySession();
+  const { caregiverId } = await requireCurrentHousehold();
   const id = formData.get("id") as string;
+  const log = await prisma.sleepLog.findUnique({ where: { id }, select: { babyId: true } });
+  if (!log) return;
+  await requireHouseholdBaby(caregiverId, log.babyId);
   await prisma.sleepLog.delete({ where: { id } });
   revalidatePath("/sleep");
   revalidatePath("/");

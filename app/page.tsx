@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Milk, Moon, Baby as BabyIcon, TrendingUp, Sparkles } from "lucide-react";
 import { getCurrentBaby } from "@/lib/current-baby";
+import { requireCurrentHousehold } from "@/lib/household";
 import { prisma } from "@/lib/db";
 import { formatAge, formatDateTime, formatDuration, relativeTime, shortRelativeTime, startOfToday } from "@/lib/format";
 import { predictNextFeeding, predictNextSleep } from "@/lib/predictions";
@@ -16,7 +17,8 @@ import { TipsPanel } from "@/components/dashboard/tips-panel";
 import { QuickNote } from "@/components/dashboard/quick-note";
 
 export default async function DashboardPage() {
-  const { current } = await getCurrentBaby();
+  const { household } = await requireCurrentHousehold();
+  const { current } = await getCurrentBaby(household.id);
 
   if (!current) {
     return (

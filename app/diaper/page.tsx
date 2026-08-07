@@ -1,5 +1,6 @@
 import { format } from "date-fns";
 import { getCurrentBaby } from "@/lib/current-baby";
+import { requireCurrentHousehold } from "@/lib/household";
 import { prisma } from "@/lib/db";
 import { createDiaperLog, deleteDiaperLog } from "@/lib/actions/diaper";
 import { formatDateTime, toDatetimeLocal } from "@/lib/format";
@@ -14,7 +15,8 @@ import { EmptyBabyState } from "@/components/dashboard/empty-baby-state";
 const badgeVariant = { WET: "blue", DIRTY: "amber", MIXED: "green" } as const;
 
 export default async function DiaperPage() {
-  const { current } = await getCurrentBaby();
+  const { household } = await requireCurrentHousehold();
+  const { current } = await getCurrentBaby(household.id);
   if (!current) return <EmptyBabyState />;
 
   const logs = await prisma.diaperLog.findMany({

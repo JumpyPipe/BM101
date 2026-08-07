@@ -3,13 +3,13 @@ import { prisma } from "@/lib/db";
 
 const COOKIE_NAME = "bm101_current_baby";
 
-export async function getAllBabies() {
-  return prisma.baby.findMany({ orderBy: { createdAt: "asc" } });
+export async function getAllBabies(householdId: string) {
+  return prisma.baby.findMany({ where: { householdId }, orderBy: { createdAt: "asc" } });
 }
 
-/** Returns the caregiver's currently selected baby, falling back to the first baby on record. */
-export async function getCurrentBaby() {
-  const babies = await getAllBabies();
+/** Returns the caregiver's currently selected baby within their current household, falling back to the first baby on record. */
+export async function getCurrentBaby(householdId: string) {
+  const babies = await getAllBabies(householdId);
   if (babies.length === 0) return { babies, current: null };
 
   const cookieStore = await cookies();

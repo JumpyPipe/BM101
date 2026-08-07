@@ -1,5 +1,6 @@
 import { format } from "date-fns";
 import { getCurrentBaby } from "@/lib/current-baby";
+import { requireCurrentHousehold } from "@/lib/household";
 import { prisma } from "@/lib/db";
 import { createSleepLog, deleteSleepLog, endSleepLog } from "@/lib/actions/sleep";
 import { formatDateTime, formatDuration, toDatetimeLocal } from "@/lib/format";
@@ -12,7 +13,8 @@ import { TrendChart } from "@/components/trackers/trend-chart";
 import { EmptyBabyState } from "@/components/dashboard/empty-baby-state";
 
 export default async function SleepPage() {
-  const { current } = await getCurrentBaby();
+  const { household } = await requireCurrentHousehold();
+  const { current } = await getCurrentBaby(household.id);
   if (!current) return <EmptyBabyState />;
 
   const logs = await prisma.sleepLog.findMany({

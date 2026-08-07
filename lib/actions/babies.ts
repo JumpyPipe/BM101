@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { setCurrentBabyCookie } from "@/lib/current-baby";
-import { verifySession } from "@/lib/auth/current-caregiver";
+import { requireCurrentHousehold, requireHouseholdBaby } from "@/lib/household";
 
 const babySchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -15,7 +15,7 @@ const babySchema = z.object({
 });
 
 export async function createBaby(formData: FormData) {
-  await verifySession();
+  const { household } = await requireCurrentHousehold();
   const parsed = babySchema.parse({
     name: formData.get("name"),
     dob: formData.get("dob"),
@@ -24,7 +24,7 @@ export async function createBaby(formData: FormData) {
   });
 
   const baby = await prisma.baby.create({
-    data: { ...parsed, dob: new Date(parsed.dob) },
+    data: { ...parsed, dob: new Date(parsed.dob), householdId: household.id },
   });
 
   await setCurrentBabyCookie(baby.id);
@@ -33,7 +33,8 @@ export async function createBaby(formData: FormData) {
 }
 
 export async function updateBaby(babyId: string, formData: FormData) {
-  await verifySession();
+  const { caregiverId } = await requireCurrentHousehold();
+  await requireHouseholdBaby(caregiverId, babyId);
   const parsed = babySchema.parse({
     name: formData.get("name"),
     dob: formData.get("dob"),
@@ -51,16 +52,18 @@ export async function updateBaby(babyId: string, formData: FormData) {
 }
 
 export async function deleteBaby(formData: FormData) {
-  await verifySession();
+  const { caregiverId } = await requireCurrentHousehold();
   const babyId = formData.get("babyId") as string;
+  await requireHouseholdBaby(caregiverId, babyId);
   await prisma.baby.delete({ where: { id: babyId } });
   revalidatePath("/", "layout");
   redirect("/babies");
 }
 
 export async function selectBaby(formData: FormData) {
-  await verifySession();
+  const { caregiverId } = await requireCurrentHousehold();
   const babyId = formData.get("babyId") as string;
+  await requireHouseholdBaby(caregiverId, babyId);
   await setCurrentBabyCookie(babyId);
   revalidatePath("/", "layout");
 }

@@ -5,6 +5,7 @@ import { Plus } from "lucide-react";
 import "./globals.css";
 import { getCurrentBaby } from "@/lib/current-baby";
 import { getCurrentCaregiver } from "@/lib/auth/current-caregiver";
+import { getCurrentHousehold } from "@/lib/household";
 import { SidebarNav } from "@/components/dashboard/sidebar-nav";
 import { BottomNav } from "@/components/dashboard/bottom-nav";
 import { BabySwitcher } from "@/components/dashboard/baby-switcher";
@@ -75,7 +76,13 @@ export default async function RootLayout({
     );
   }
 
-  const { babies, current } = await getCurrentBaby();
+  // A caregiver always has a household by the time they're signed in
+  // (signup and invite-acceptance both create the membership) — this null
+  // case is only a defensive fallback, not an expected path.
+  const household = await getCurrentHousehold(caregiver.id);
+  const { babies, current } = household
+    ? await getCurrentBaby(household.id)
+    : { babies: [], current: null };
 
   return (
     <html

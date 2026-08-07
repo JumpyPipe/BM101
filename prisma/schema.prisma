@@ -10,13 +10,79 @@ datasource db {
   provider = "postgresql"
 }
 
+/// A private family/group — the ownership boundary. A caregiver only ever
+/// sees babies belonging to a household they're a member of (see
+/// HouseholdMembership). Joining requires an invite link (HouseholdInvite);
+/// there's no open "browse households" path anywhere in the app.
+model Household {
+  id        String   @id @default(cuid())
+  name      String   @default("My Family")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  babies      Baby[]
+  memberships HouseholdMembership[]
+  invites     HouseholdInvite[]
+}
+
+enum HouseholdRole {
+  /// Full control: manage babies, invite/remove members, delete the household.
+  OWNER
+  /// Can log data and view everything, but not manage membership.
+  MEMBER
+}
+
+/// Join table: which caregivers belong to which households, and with what
+/// role. A caregiver (one real person's account) can belong to more than
+/// one household — e.g. a grandparent helping two different families.
+model HouseholdMembership {
+  id          String        @id @default(cuid())
+  householdId String
+  household   Household     @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  caregiverId String
+  caregiver   Caregiver     @relation(fields: [caregiverId], references: [id], onDelete: Cascade)
+  role        HouseholdRole @default(MEMBER)
+
+  createdAt DateTime @default(now())
+
+  @@unique([householdId, caregiverId])
+  @@index([caregiverId])
+}
+
+/// A shareable, single-use join link for a household. Anyone who opens
+/// /invite/[token] and either signs up or signs in gets added as a member
+/// — this is the only way into a household that isn't already yours.
+model HouseholdInvite {
+  id          String        @id @default(cuid())
+  householdId String
+  household   Household     @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  token       String        @unique
+  role        HouseholdRole @default(MEMBER)
+
+  createdById String
+  createdBy   Caregiver @relation("InvitesCreated", fields: [createdById], references: [id])
+
+  expiresAt DateTime?
+  usedAt    DateTime?
+  usedById  String?
+  usedBy    Caregiver? @relation("InvitesUsed", fields: [usedById], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([householdId])
+  @@index([token])
+}
+
 model Baby {
-  id       String   @id @default(cuid())
-  name     String
-  dob      DateTime
-  sex      Sex      @default(UNKNOWN)
-  photoUrl String?
-  notes    String?
+  id          String    @id @default(cuid())
+  householdId String
+  household   Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  name        String
+  dob         DateTime
+  sex         Sex       @default(UNKNOWN)
+  photoUrl    String?
+  notes       String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -30,6 +96,8 @@ model Baby {
   insights     Insight[]
   predictions  Prediction[]
   tips         Tip[]
+
+  @@index([householdId])
 }
 
 enum Sex {
@@ -49,7 +117,10 @@ model Caregiver {
   email        String? @unique
   passwordHash String?
 
-  credentials WebAuthnCredential[]
+  credentials     WebAuthnCredential[]
+  memberships     HouseholdMembership[]
+  invitesCreated  HouseholdInvite[]     @relation("InvitesCreated")
+  invitesUsed     HouseholdInvite[]     @relation("InvitesUsed")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

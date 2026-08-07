@@ -3,6 +3,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { updateBaby } from "@/lib/actions/babies";
 import { toDatetimeLocal } from "@/lib/format";
+import { requireCurrentHousehold, isHouseholdBaby } from "@/lib/household";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input, Label, Select, Textarea } from "@/components/ui/input";
 import { SubmitButton } from "@/components/ui/submit-button";
@@ -10,6 +11,8 @@ import { Button } from "@/components/ui/button";
 
 export default async function EditBabyPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const { caregiverId } = await requireCurrentHousehold();
+  if (!(await isHouseholdBaby(caregiverId, id))) notFound();
   const baby = await prisma.baby.findUnique({ where: { id } });
   if (!baby) notFound();
 

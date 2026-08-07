@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { updateCaregiver } from "@/lib/actions/caregivers";
 import { deleteCredential } from "@/lib/actions/webauthn";
 import { getCurrentCaregiver } from "@/lib/auth/current-caregiver";
+import { requireCurrentHousehold, isHouseholdMember } from "@/lib/household";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input, Label } from "@/components/ui/input";
 import { SubmitButton } from "@/components/ui/submit-button";
@@ -14,6 +15,8 @@ import { ScanFace, Trash2 } from "lucide-react";
 
 export default async function EditCaregiverPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const { household } = await requireCurrentHousehold();
+  if (!(await isHouseholdMember(household.id, id))) notFound();
   const [caregiver, self] = await Promise.all([
     prisma.caregiver.findUnique({ where: { id }, include: { credentials: true } }),
     getCurrentCaregiver(),

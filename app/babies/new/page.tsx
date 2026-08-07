@@ -3,6 +3,7 @@ import { Sparkles } from "lucide-react";
 import { createBaby } from "@/lib/actions/babies";
 import { createCaregiverOnboarding } from "@/lib/actions/caregivers";
 import { prisma } from "@/lib/db";
+import { requireCurrentHousehold, isHouseholdBaby } from "@/lib/household";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input, Label, Select, Textarea } from "@/components/ui/input";
 import { SubmitButton } from "@/components/ui/submit-button";
@@ -16,9 +17,12 @@ export default async function NewBabyPage({
   const { step, babyId } = await searchParams;
 
   if (step === "caregiver" && babyId) {
-    const baby = await prisma.baby.findUnique({ where: { id: babyId } });
-    if (baby) {
-      return <CaregiverStep babyName={baby.name} />;
+    const { caregiverId } = await requireCurrentHousehold();
+    if (await isHouseholdBaby(caregiverId, babyId)) {
+      const baby = await prisma.baby.findUnique({ where: { id: babyId } });
+      if (baby) {
+        return <CaregiverStep babyName={baby.name} />;
+      }
     }
   }
 

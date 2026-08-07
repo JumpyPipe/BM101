@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getSessionCaregiverId } from "@/lib/auth/session";
 import { SignUpForm } from "@/components/auth/signup-form";
+import { OAuthButtons } from "@/components/auth/oauth-buttons";
 import { SnugMark } from "@/components/ui/snug-mark";
 
 export default async function SignUpPage() {
@@ -19,7 +20,9 @@ export default async function SignUpPage() {
           Starts your own private family. Add babies and invite caregivers once you&rsquo;re in.
         </p>
       </div>
-      <SignUpForm />
+      <OAuthButtons>
+        <SignUpForm />
+      </OAuthButtons>
       <p className="text-center text-sm text-zinc-500">
         Already have an account?{" "}
         <Link href="/login" className="font-medium text-teal-600 hover:underline">

@@ -7,6 +7,7 @@ function isPublicPath(pathname: string): boolean {
   if (pathname === "/login" || pathname === "/signup" || pathname === "/setup") return true;
   if (pathname === "/manifest.webmanifest" || pathname === "/icon.png") return true;
   if (pathname.startsWith("/api/v1/")) return true;
+  if (pathname.startsWith("/api/auth/")) return true;
   if (pathname === "/api/webauthn/login-options" || pathname === "/api/webauthn/login-verify") {
     return true;
   }

@@ -2,17 +2,18 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getSessionCaregiverId } from "@/lib/auth/session";
 import { LoginForm } from "@/components/auth/login-form";
+import { OAuthButtons } from "@/components/auth/oauth-buttons";
 import { SnugMark } from "@/components/ui/snug-mark";
 
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string }>;
+  searchParams: Promise<{ next?: string; error?: string }>;
 }) {
   const caregiverId = await getSessionCaregiverId();
   if (caregiverId) redirect("/");
 
-  const { next } = await searchParams;
+  const { next, error } = await searchParams;
 
   return (
     <div className="flex w-full max-w-sm flex-col items-center gap-6">
@@ -23,7 +24,14 @@ export default async function LoginPage({
         </h1>
         <p className="text-sm text-zinc-500">Sign in to see your baby&rsquo;s log.</p>
       </div>
-      <LoginForm nextPath={next} />
+      {error && (
+        <p className="w-full rounded-xl bg-red-50 px-3 py-2 text-center text-sm text-red-600 dark:bg-red-950/50">
+          Couldn&rsquo;t sign you in that way. Try again, or use email and password.
+        </p>
+      )}
+      <OAuthButtons>
+        <LoginForm nextPath={next} />
+      </OAuthButtons>
       <p className="text-center text-sm text-zinc-500">
         New to Snug?{" "}
         <Link href="/signup" className="font-medium text-teal-600 hover:underline">

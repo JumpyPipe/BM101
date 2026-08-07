@@ -1,12 +1,15 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { signUp, type ActionState } from "@/lib/actions/auth";
+import { meetsPasswordRequirements } from "@/lib/password-requirements";
 import { Input, Label } from "@/components/ui/input";
 import { SubmitButton } from "@/components/ui/submit-button";
+import { PasswordRequirements } from "@/components/auth/password-requirements";
 
 export function SignUpForm({ nextPath }: { nextPath?: string }) {
   const [state, formAction] = useActionState<ActionState, FormData>(signUp, null);
+  const [password, setPassword] = useState("");
 
   return (
     <form action={formAction} className="flex w-full flex-col gap-4">
@@ -27,11 +30,14 @@ export function SignUpForm({ nextPath }: { nextPath?: string }) {
           type="password"
           autoComplete="new-password"
           minLength={8}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
           required
         />
+        <PasswordRequirements password={password} />
       </div>
       {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
-      <SubmitButton className="w-full" size="lg">
+      <SubmitButton className="w-full" size="lg" disabled={!meetsPasswordRequirements(password)}>
         Create account
       </SubmitButton>
     </form>

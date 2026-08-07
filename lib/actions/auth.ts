@@ -8,6 +8,7 @@ import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import { createSession, clearSession, getSessionCaregiverId } from "@/lib/auth/session";
 import { isEligibleForBootstrapClaim, isHouseholdMember, getCurrentHousehold, setCurrentHouseholdCookie } from "@/lib/household";
 import { createAccountWithNewHousehold, EmailInUseError } from "@/lib/auth/signup";
+import { meetsPasswordRequirements, PASSWORD_REQUIREMENTS_MESSAGE } from "@/lib/password-requirements";
 
 export type ActionState = { error: string } | null;
 
@@ -55,7 +56,11 @@ export async function logout() {
 const signUpSchema = z.object({
   name: z.string().trim().min(1, "Name is required"),
   email: z.string().email("Enter a valid email"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
+  // Same policy as components/auth/password-requirements.tsx's live
+  // checklist (shared via lib/password-requirements.ts) — the disabled
+  // submit button stops normal users, this is defense against a client
+  // that bypasses it (devtools, direct API misuse).
+  password: z.string().refine(meetsPasswordRequirements, { message: PASSWORD_REQUIREMENTS_MESSAGE }),
   next: z.string().optional(),
 });
 

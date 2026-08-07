@@ -1,5 +1,6 @@
 import "server-only";
 import { verifySessionToken, getSessionCaregiverId } from "@/lib/auth/session";
+import { getCurrentHousehold } from "@/lib/household";
 
 /** Thrown by `requireApiCaregiver` — caught by `handleRoute` and mapped to a 401. */
 export class ApiAuthError extends Error {}
@@ -31,4 +32,23 @@ export async function requireApiCaregiver(req: Request): Promise<string> {
   if (cookieCaregiverId) return cookieCaregiverId;
 
   throw new ApiAuthError("Unauthorized — include a valid Bearer token from /api/v1/auth/login.");
+}
+
+/**
+ * Same as requireApiCaregiver, plus resolves the caregiver's household —
+ * every /api/v1 route that touches babies/logs needs this, now that
+ * households scope who can see what. Falls back to the caregiver's first
+ * household membership (the iOS client doesn't send a household-selector
+ * cookie the way the web app's UI does — fine in practice, since the
+ * common case is one household per caregiver).
+ */
+export async function requireApiHousehold(
+  req: Request,
+): Promise<{ caregiverId: string; householdId: string }> {
+  const caregiverId = await requireApiCaregiver(req);
+  const household = await getCurrentHousehold(caregiverId);
+  if (!household) {
+    throw new ApiAuthError("You're not part of a household yet.");
+  }
+  return { caregiverId, householdId: household.id };
 }

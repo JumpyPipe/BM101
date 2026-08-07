@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getAnthropicClient, summarizeBabyContext, CLAUDE_MODEL } from "@/lib/ai";
 import { verifySession } from "@/lib/auth/current-caregiver";
+import { isHouseholdBaby } from "@/lib/household";
 
 const requestSchema = z.object({ babyId: z.string().min(1) });
 
@@ -29,8 +30,9 @@ const insightSchema = {
 };
 
 export async function POST(req: Request) {
+  let caregiverId: string;
   try {
-    await verifySession();
+    caregiverId = await verifySession();
   } catch {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -40,6 +42,10 @@ export async function POST(req: Request) {
     ({ babyId } = requestSchema.parse(await req.json()));
   } catch {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+  }
+
+  if (!(await isHouseholdBaby(caregiverId, babyId))) {
+    return NextResponse.json({ error: "Baby not found" }, { status: 404 });
   }
 
   let anthropic;

@@ -3,7 +3,8 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { handleRoute, jsonError } from "@/lib/api-helpers";
 import { getAnthropicClient, CLAUDE_MODEL } from "@/lib/ai";
-import { requireApiCaregiver } from "@/lib/auth/api-auth";
+import { requireApiHousehold } from "@/lib/auth/api-auth";
+import { isHouseholdBaby } from "@/lib/household";
 import type Anthropic from "@anthropic-ai/sdk";
 
 const requestSchema = z.object({
@@ -46,8 +47,9 @@ const logEventTool: Anthropic.Tool = {
 
 export async function POST(req: Request) {
   return handleRoute(async () => {
-    await requireApiCaregiver(req);
+    const { caregiverId } = await requireApiHousehold(req);
     const { babyId, text } = requestSchema.parse(await req.json());
+    if (!(await isHouseholdBaby(caregiverId, babyId))) return jsonError("Baby not found", 404);
 
     let anthropic;
     try {

@@ -26,10 +26,18 @@ async function main() {
   await prisma.sleepLog.deleteMany();
   await prisma.feedingLog.deleteMany();
   await prisma.baby.deleteMany();
+  await prisma.householdMembership.deleteMany();
+  await prisma.householdInvite.deleteMany();
   await prisma.caregiver.deleteMany();
+  await prisma.household.deleteMany();
+
+  const household = await prisma.household.create({
+    data: { name: "My Family" },
+  });
 
   const baby = await prisma.baby.create({
     data: {
+      householdId: household.id,
       name: "Aanya",
       dob: daysAgo(140),
       sex: "FEMALE",
@@ -37,12 +45,20 @@ async function main() {
     },
   });
 
-  await prisma.caregiver.createMany({
-    data: [
+  const caregivers = await Promise.all(
+    [
       { name: "Akash", role: "Parent" },
       { name: "Partner", role: "Parent" },
       { name: "Grandma", role: "Family" },
-    ],
+    ].map((c) => prisma.caregiver.create({ data: c })),
+  );
+
+  await prisma.householdMembership.createMany({
+    data: caregivers.map((c, i) => ({
+      householdId: household.id,
+      caregiverId: c.id,
+      role: i === 0 ? "OWNER" : "MEMBER",
+    })),
   });
 
   await prisma.feedingLog.createMany({

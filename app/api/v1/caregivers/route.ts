@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { handleRoute } from "@/lib/api-helpers";
-import { requireApiCaregiver } from "@/lib/auth/api-auth";
+import { requireApiHousehold } from "@/lib/auth/api-auth";
 
 const createSchema = z.object({
   name: z.string().min(1),
@@ -16,20 +16,24 @@ const publicSelect = { id: true, name: true, role: true, createdAt: true, update
 
 export async function GET(req: Request) {
   return handleRoute(async () => {
-    await requireApiCaregiver(req);
-    const caregivers = await prisma.caregiver.findMany({
+    const { householdId } = await requireApiHousehold(req);
+    const memberships = await prisma.householdMembership.findMany({
+      where: { householdId },
       orderBy: { createdAt: "asc" },
-      select: publicSelect,
+      select: { caregiver: { select: publicSelect } },
     });
-    return NextResponse.json({ caregivers });
+    return NextResponse.json({ caregivers: memberships.map((m) => m.caregiver) });
   });
 }
 
 export async function POST(req: Request) {
   return handleRoute(async () => {
-    await requireApiCaregiver(req);
+    const { householdId } = await requireApiHousehold(req);
     const body = createSchema.parse(await req.json());
-    const caregiver = await prisma.caregiver.create({ data: body, select: publicSelect });
+    const caregiver = await prisma.caregiver.create({
+      data: { ...body, memberships: { create: { householdId, role: "MEMBER" } } },
+      select: publicSelect,
+    });
     return NextResponse.json({ caregiver }, { status: 201 });
   });
 }

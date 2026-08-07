@@ -8,12 +8,6 @@ export async function getCurrentCaregiver() {
   return prisma.caregiver.findUnique({ where: { id: caregiverId } });
 }
 
-/** Whether any caregiver has ever completed the login bootstrap flow. */
-export async function anyCaregiverHasLogin(): Promise<boolean> {
-  const count = await prisma.caregiver.count({ where: { passwordHash: { not: null } } });
-  return count > 0;
-}
-
 /**
  * Data Access Layer session check, memoized per-request. Proxy only does an
  * optimistic redirect; every Server Action and Route Handler that mutates or

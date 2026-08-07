@@ -1,18 +1,9 @@
-import { redirect } from "next/navigation";
-import { prisma } from "@/lib/db";
-import { anyCaregiverHasLogin } from "@/lib/auth/current-caregiver";
+import { getUnclaimedCaregiversNeedingBootstrap } from "@/lib/household";
 import { ClaimForm } from "@/components/auth/claim-form";
 import { SnugMark } from "@/components/ui/snug-mark";
 
 export default async function SetupPage() {
-  if (await anyCaregiverHasLogin()) {
-    redirect("/login");
-  }
-
-  const caregivers = await prisma.caregiver.findMany({
-    where: { passwordHash: null },
-    orderBy: { createdAt: "asc" },
-  });
+  const caregivers = await getUnclaimedCaregiversNeedingBootstrap();
 
   return (
     <div className="flex w-full max-w-sm flex-col items-center gap-6">

@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import { createSession, clearSession, getSessionCaregiverId } from "@/lib/auth/session";
-import { anyCaregiverHasLogin } from "@/lib/auth/current-caregiver";
+import { isEligibleForBootstrapClaim, isHouseholdMember, getCurrentHousehold } from "@/lib/household";
 
 export type ActionState = { error: string } | null;
 
@@ -63,10 +63,6 @@ const claimSchema = z.object({
  * after that, use setCaregiverLogin (requires being signed in) instead.
  */
 export async function claimAccount(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  if (await anyCaregiverHasLogin()) {
-    return { error: "Login is already set up for this household. Sign in instead." };
-  }
-
   const parsed = claimSchema.safeParse({
     caregiverId: formData.get("caregiverId"),
     email: formData.get("email"),
@@ -74,6 +70,10 @@ export async function claimAccount(_prevState: ActionState, formData: FormData):
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+
+  if (!(await isEligibleForBootstrapClaim(parsed.data.caregiverId))) {
+    return { error: "That caregiver isn't available to claim. Sign in instead, or ask an owner to invite you." };
   }
 
   const caregiver = await prisma.caregiver.findUnique({ where: { id: parsed.data.caregiverId } });
@@ -111,6 +111,11 @@ export async function setCaregiverLogin(_prevState: ActionState, formData: FormD
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+
+  const household = await getCurrentHousehold(sessionCaregiverId);
+  if (!household || !(await isHouseholdMember(household.id, parsed.data.caregiverId))) {
+    return { error: "That caregiver isn't in your household." };
   }
 
   const data: { email: string; passwordHash?: string } = {

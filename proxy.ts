@@ -4,7 +4,7 @@ import { verifySessionToken } from "@/lib/auth/session";
 const SESSION_COOKIE_NAME = "snug_session";
 
 function isPublicPath(pathname: string): boolean {
-  if (pathname === "/login" || pathname === "/setup") return true;
+  if (pathname === "/login" || pathname === "/signup" || pathname === "/setup") return true;
   if (pathname === "/manifest.webmanifest" || pathname === "/icon.png") return true;
   if (pathname.startsWith("/api/v1/")) return true;
   if (pathname === "/api/webauthn/login-options" || pathname === "/api/webauthn/login-verify") {

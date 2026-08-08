@@ -18,7 +18,7 @@ enum APIError: LocalizedError {
     }
 }
 
-/// Thin async/await wrapper around the BM101 `/api/v1` JSON API.
+/// Thin async/await wrapper around Snug's `/api/v1` JSON API.
 /// One method per endpoint — no generic "request builder" abstraction,
 /// since the request/response shapes differ enough per call that a shared
 /// builder would just hide the actual contract.

@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct BM101App: App {
+struct SnugApp: App {
     @StateObject private var appState = AppState()
     @StateObject private var authManager = AuthManager.shared
     @Environment(\.scenePhase) private var scenePhase

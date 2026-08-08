@@ -1,8 +1,11 @@
-# BM101 iOS
+# Snug iOS
 
-Native SwiftUI client for BM101. Talks to the Next.js backend's `/api/v1`
+Native SwiftUI client for Snug. Talks to the Next.js backend's `/api/v1`
 JSON API at the repo root — see `../PLANNING-iOS.md` for the architecture
-and the decisions behind this split.
+and the decisions behind this split. The Xcode project is generated from
+`project.yml` as `Snug.xcodeproj`; the on-disk source folder is still named
+`BM101/` (harmless — Xcode doesn't care, and renaming it isn't worth the
+risk on top of everything else in this app's very first compile).
 
 ## ⚠️ This was written without a Mac
 
@@ -35,7 +38,7 @@ drifted, a missing case) rather than assume it's flawless.
 ```bash
 cd ios
 xcodegen generate
-open BM101.xcodeproj
+open Snug.xcodeproj
 ```
 
 Then in Xcode: select a Simulator (e.g. iPhone 15) or your own iPhone, and

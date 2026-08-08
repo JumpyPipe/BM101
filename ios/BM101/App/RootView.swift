@@ -56,7 +56,7 @@ private struct NoBabyView: View {
                 Image(systemName: "figure.child")
                     .font(.system(size: 48))
                     .foregroundStyle(.pink)
-                Text("Welcome to BM101")
+                Text("Welcome to Snug")
                     .font(.title2.bold())
                 Text("Add your baby's profile to start tracking feedings, sleep, diapers, growth, and milestones.")
                     .multilineTextAlignment(.center)
@@ -65,7 +65,7 @@ private struct NoBabyView: View {
                 Button("Add your first baby") { showingAddBaby = true }
                     .buttonStyle(.borderedProminent)
             }
-            .navigationTitle("BM101")
+            .navigationTitle("Snug")
             .sheet(isPresented: $showingAddBaby) {
                 AddBabyView()
             }

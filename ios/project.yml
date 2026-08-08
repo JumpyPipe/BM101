@@ -1,11 +1,11 @@
-name: BM101
+name: Snug
 options:
-  bundleIdPrefix: com.bm101
+  bundleIdPrefix: com.snug
   deploymentTarget:
     iOS: "16.0"
 
 targets:
-  BM101:
+  Snug:
     type: application
     platform: iOS
     deploymentTarget: "16.0"
@@ -13,6 +13,7 @@ targets:
       - path: BM101
     info:
       properties:
+        CFBundleDisplayName: Snug
         UILaunchScreen: {}
         UIBackgroundModes: []
         NSCameraUsageDescription: "Snug uses your camera to take photos you can save to a Photos album."
@@ -21,7 +22,7 @@ targets:
         NSFaceIDUsageDescription: "Snug can use Face ID to quickly and securely unlock your baby's data."
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.bm101.app
+        PRODUCT_BUNDLE_IDENTIFIER: com.snug.app
         SWIFT_VERSION: "5.0"
         TARGETED_DEVICE_FAMILY: "1,2"
         ENABLE_PREVIEWS: YES

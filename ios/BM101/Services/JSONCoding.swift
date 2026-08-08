@@ -29,7 +29,7 @@ enum APIDateDecoding {
 }
 
 extension JSONDecoder {
-    /// Decoder configured for the BM101 API's date format.
+    /// Decoder configured for the Snug API's date format.
     static var api: JSONDecoder {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .custom { try APIDateDecoding.decode($0) }

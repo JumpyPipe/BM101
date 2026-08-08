@@ -10,5 +10,5 @@ enum AppConfig {
     /// `http://localhost:3000/api/v1` (Simulator) or your Mac's LAN IP
     /// (physical device) — and re-add the ATS exception in `project.yml`
     /// if you do, since plain HTTP is blocked by default.
-    static let apiBaseURL = URL(string: "https://cv-fec46dd68ed4.ewr.prisma.build/api/v1")!
+    static let apiBaseURL = URL(string: "https://bm-101.vercel.app/api/v1")!
 }

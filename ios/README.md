@@ -42,7 +42,7 @@ Then in Xcode: select a Simulator (e.g. iPhone 15) or your own iPhone, and
 Run (⌘R).
 
 `Services/AppConfig.swift` points at the deployed backend
-(`https://cv-fec46dd68ed4.ewr.prisma.build/api/v1`) by default, so both the
+(`https://bm-101.vercel.app/api/v1`) by default, so both the
 Simulator and a physical device work out of the box with no LAN setup. To
 point at a local `npm run dev` instead: the Simulator can reach
 `http://localhost:3000/api/v1` directly; a physical device needs your Mac's
@@ -57,11 +57,12 @@ HTTPS backend.
 
 The API now requires auth (`POST /api/v1/auth/login`, bearer token stored
 in the Keychain) — every other `/api/v1` route 401s without it. **You need
-a caregiver login set up first, from the web app**: visit the deployed
-site's `/setup` (first caregiver ever) or a caregiver's "Login & security"
-section under Babies → Caregivers → Edit, set an email/password, then use
-those same credentials to sign in on iOS. There's no separate iOS-only
-signup flow — it's the same caregiver accounts either way.
+a caregiver login set up first, from the web app**: sign up at the deployed
+site's `/signup` (creates your own private household) — or, if you're
+joining a household someone else already created, use the invite link
+they send you (`/invite/<token>`). Then use those same credentials to sign
+in on iOS. There's no separate iOS-only signup flow — it's the same
+caregiver accounts either way.
 
 Face ID/Touch ID (More → Security, only shown if the device has one
 enrolled) is an optional fast-unlock layer on top of that login — same
